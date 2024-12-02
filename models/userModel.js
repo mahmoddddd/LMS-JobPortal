@@ -72,9 +72,9 @@ userSchema.pre("save", async function (next) {
   }
 });
 
-userSchema.methods.comparePassword = async function (password) {
+userSchema.methods.comparePassword = async function (enteredPassword) {
   try {
-    return await bcrypt.compare(password, this.password); // Compare the provided password with the hashed one
+    return await bcrypt.compare(enteredPassword, this.password); // Compare the provided password with the hashed one
   } catch (error) {
     throw new Error("Error comparing password");
   }

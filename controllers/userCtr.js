@@ -50,6 +50,16 @@ const registerAUser = asyncHandler(async (req, res) => {
   }
 });
 
+/* login a user */
+const loginUser = asyncHandler(async (req, res) => {
+  const { email, password } = req.body;
+  // first check if user already exsist
+  const findUser = await User.findOne({ email: email });
+
+  if (findUser && (await findUser.comparePassword(password))) {
+  }
+});
+
 module.exports = {
   registerAUser,
 };
