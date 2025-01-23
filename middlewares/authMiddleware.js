@@ -1,9 +1,6 @@
 const jwt = require("jsonwebtoken");
 const asyncHandler = require("express-async-handler");
 const User = require("../models/userModel");
-const validateMongoDbId = require("../config/validateMongoDb");
-
-// Middleware to check if the user is authenticated
 const isAuth = asyncHandler(async (req, res, next) => {
   let token;
 
@@ -15,48 +12,54 @@ const isAuth = asyncHandler(async (req, res, next) => {
     try {
       // Extract the token from the header
       token = req.headers.authorization.split(" ")[1];
+      // console.log("Token extracted:", token); // Debugging
 
       // Verify the token
       const decoded = jwt.verify(token, process.env.JWT_SECRET);
+      // console.log("Decoded token payload:", decoded); // Debugging
 
       // Find the user in the database and attach it to the request object
-      req.user = await User.findById(decoded.id).select("-password");
+      const user = await User.findById(decoded.id).select("-password");
+      // console.log("User found in database:", user); // Debugging
 
-      // If no user is found, throw an error
-      if (!req.user) {
-        res.status(404);
-        throw new Error("User not found. Authentication failed.");
+      if (!user) {
+        return res.status(404).json({
+          status: false,
+          message: "User not found. Authentication failed.",
+        });
       }
 
-      // Proceed to the next middleware or route handler
+      req.user = user;
+      //  console.log("User attached to request:", req.user); // Debugging
       next();
     } catch (error) {
-      res.status(401);
-      throw new Error(
-        `Not authorized. Token verification failed: ${error.message}`
-      );
+      return res.status(401).json({
+        status: false,
+        message: `Not authorized. Token verification failed: ${error.message}`,
+      });
     }
   } else {
     // If no token is found
-    res.status(401);
-    throw new Error(
-      "Not authorized. No token provided in the request headers."
-    );
+    return res.status(401).json({
+      status: false,
+      message: "Not authorized. No token provided in the request headers.",
+    });
   }
 });
-
 // Middleware to check if the user is an admin
 const isAdmin = asyncHandler(async (req, res, next) => {
   if (req.user && req.user.roles === "admin") {
     next(); // User is an admin, proceed
   } else if (!req.user) {
-    res.status(401);
-    throw new Error("Unauthorized. Please log in to access this resource.");
+    return res.status(401).json({
+      status: false,
+      message: "Unauthorized. Please log in to access this resource.",
+    });
   } else {
-    res.status(403);
-    throw new Error(
-      "Access denied. You do not have the required admin privileges."
-    );
+    return res.status(403).json({
+      status: false,
+      message: "Access denied. You do not have the required admin privileges.",
+    });
   }
 });
 
@@ -65,13 +68,16 @@ const isInstructor = asyncHandler(async (req, res, next) => {
   if (req.user && req.user.roles === "instructor") {
     next(); // User is an instructor, proceed
   } else if (!req.user) {
-    res.status(401);
-    throw new Error("Unauthorized. Please log in to access this resource.");
+    return res.status(401).json({
+      status: false,
+      message: "Unauthorized. Please log in to access this resource.",
+    });
   } else {
-    res.status(403);
-    throw new Error(
-      "Access denied. You do not have the required instructor privileges."
-    );
+    return res.status(403).json({
+      status: false,
+      message:
+        "Access denied. You do not have the required instructor privileges.",
+    });
   }
 });
 

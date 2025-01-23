@@ -85,23 +85,40 @@ const getAllUsers = asyncHandler(async (req, res) => {
   }
 });
 
-const updateUSerProfile = asyncHandler(async (req, res) => {
-  const { id } = req.params;
-  validateMongoDbId(id);
+const getAUser = asyncHandler(async (req, res) => {
+  const userId = req.params.id; // Access the user ID correctly
+  const user = await User.findById(userId); // Find the user by ID
 
-  const user = await User.findById(id);
   if (!user) {
-    res.status(404).json("User Not FOuund");
+    return res.status(404).json({ status: false, message: "User not found" });
   }
 
+  res.status(200).json({
+    status: true,
+    message: "User fetched successfully",
+    user,
+  });
+});
+
+const updateUserProfile = asyncHandler(async (req, res) => {
   try {
+    // Extract user ID from the authenticated user object
+    const userId = req.user.id;
+    // Validate MongoDB ID
+    validateMongoDbId(userId);
+
+    // Update the user profile
     const updatedUser = await User.findByIdAndUpdate(
-      id,
-      req.body, // Use the entire request body for updates
-      { new: true }
+      userId,
+      req.body, // Use the entire request body directly for updating
+      { new: true, runValidators: true }
     );
 
-    res.json({
+    if (!updatedUser) {
+      return res.status(404).json({ status: false, error: "User not found" });
+    }
+
+    res.status(200).json({
       status: true,
       message: "User updated successfully",
       user: updatedUser,
@@ -109,7 +126,169 @@ const updateUSerProfile = asyncHandler(async (req, res) => {
   } catch (error) {
     res.status(500).json({
       status: false,
-      error: "Something went wrong",
+      error: "Failed to update user profile",
+      details: error.message,
+    });
+  }
+});
+
+const deleteUser = asyncHandler(async (req, res) => {
+  const userId = req.params.id;
+  if (!validateMongoDbId(userId)) {
+    return res.status(400).json({
+      status: false,
+      error: "Invalid MongoDB ID",
+    });
+  }
+  try {
+    const deletedUser = await User.findByIdAndDelete(userId);
+
+    if (!deletedUser) {
+      return res.status(404).json({
+        status: false,
+        error: "User not found",
+      });
+    }
+
+    res.status(200).json({
+      status: true,
+      message: "User deleted successfully",
+    });
+  } catch (error) {
+    res.status(500).json({
+      status: false,
+      error: "Failed to delete user",
+      details: error.message,
+    });
+  }
+});
+
+const blockUser = asyncHandler(async (req, res) => {
+  const userId = req.params.id;
+  if (!validateMongoDbId(userId)) {
+    return res.status(400).json({
+      status: false,
+      error: "Invalid MongoDB ID",
+    });
+  }
+  try {
+    const user = await User.findById(userId);
+
+    if (!user) {
+      return res.status(404).json({
+        status: false,
+        error: "User not found",
+      });
+    }
+
+    if (user.isBlocked) {
+      return res.status(400).json({
+        status: false,
+        message: "User is already blocked",
+      });
+    }
+
+    // Block the user (set isBlocked to true)
+    user.isBlocked = true;
+    await user.save();
+
+    res.status(200).json({
+      status: true,
+      message: "User blocked successfully",
+    });
+  } catch (error) {
+    res.status(500).json({
+      status: false,
+      error: "Failed to block user",
+      details: error.message,
+    });
+  }
+});
+
+const unblockUser = asyncHandler(async (req, res) => {
+  const userId = req.params.id;
+
+  if (!validateMongoDbId(userId)) {
+    return res.status(400).json({
+      status: false,
+      error: "Invalid MongoDB ID",
+    });
+  }
+
+  try {
+    const user = await User.findById(userId);
+
+    if (!user) {
+      return res.status(404).json({
+        status: false,
+        error: "User not found",
+      });
+    }
+
+    if (!user.isBlocked) {
+      return res.status(400).json({
+        status: false,
+        message: "User is not blocked",
+      });
+    }
+
+    user.isBlocked = false;
+    await user.save();
+
+    res.status(200).json({
+      status: true,
+      message: "User unblocked successfully",
+    });
+  } catch (error) {
+    res.status(500).json({
+      status: false,
+      error: "Failed to unblock user",
+      details: error.message,
+    });
+  }
+});
+
+const updatePassword = asyncHandler(async (req, res) => {
+  const { _id } = req.user; // Assuming _id comes from authentication middleware
+  const { password } = req.body;
+
+  if (!validateMongoDbId(_id)) {
+    return res.status(400).json({
+      status: false,
+      error: "Invalid MongoDB ID",
+    });
+  }
+
+  try {
+    const user = await User.findById(_id);
+    if (!user) {
+      return res.status(404).json({
+        status: false,
+        error: "User not found",
+      });
+    }
+
+    // Use comparePassword to check if the new password matches the old one
+    const isMatched = await user.comparePassword(password);
+    if (isMatched) {
+      return res.status(400).json({
+        status: false,
+        error: "Please enter a different password. This one is already in use.",
+      });
+    }
+
+    // Update the password and save the user
+    user.password = password;
+    await user.save();
+
+    return res.status(200).json({
+      status: true,
+      message: "Password updated successfully",
+    });
+  } catch (error) {
+    return res.status(500).json({
+      status: false,
+      error: "Failed to update password",
       details: error.message,
     });
   }
@@ -119,5 +298,10 @@ module.exports = {
   registerAUser,
   loginUser,
   getAllUsers,
-  updateUSerProfile,
+  updateUserProfile,
+  deleteUser,
+  getAUser,
+  blockUser,
+  unblockUser,
+  updatePassword,
 };
