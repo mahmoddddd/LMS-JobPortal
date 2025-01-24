@@ -13,6 +13,8 @@ const {
   blockUser,
   unblockUser,
   updatePassword,
+  forgetPasswoordToken,
+  resetPassword,
 } = require("../controllers/userCtr");
 
 // Public routes
@@ -25,9 +27,12 @@ router.get("/getAUser/:id", isAuth, isAdmin, getAUser); // Get a specific user b
 router.delete("/deleteUser/:id", isAuth, isAdmin, deleteUser); // Delete a user
 router.put("/blockUser/:id", isAuth, isAdmin, blockUser); // Block a user
 router.put("/unblockUser/:id", isAuth, isAdmin, unblockUser); // Unblock a user
-
 // Authenticated user routes
 router.put("/updateProfile", isAuth, updateUserProfile); // Update user profile
 router.put("/update-password", isAuth, updatePassword); // Update user password
+
+// Forgot and Reset Password
+router.post("/forgetPasswordToken", forgetPasswoordToken); // Generate password reset token
+router.put("/reset-password/:token", resetPassword); // Reset password using token
 
 module.exports = router;
