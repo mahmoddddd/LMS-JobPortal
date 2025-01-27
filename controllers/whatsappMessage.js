@@ -1,7 +1,7 @@
 var https = require("follow-redirects").https;
 var fs = require("fs");
 const sendWhatsAppMessage = async (user, email) => {
-  const token = await user.createPasswordResetToken(); // إنشاء رمز إعادة تعيين كلمة المرور
+  const token = await user.createPasswordResetToken(); //
   const resetLink = `http://localhost:4000/api/user/reset-password/${token}`;
 
   var options = {
@@ -25,8 +25,8 @@ const sendWhatsAppMessage = async (user, email) => {
 
     res.on("end", function (chunk) {
       var body = Buffer.concat(chunks);
-      console.log("Response Status Code:", res.statusCode); // طباعة حالة الاستجابة
-      console.log("Response Body:", body.toString()); // طباعة محتوى الاستجابة
+      console.log("Response Status Code:", res.statusCode); //  log the response status code
+      console.log("Response Body:", body.toString()); // log the response body
       if (res.statusCode !== 200) {
         console.error(
           "Failed to send WhatsApp message. Response:",
@@ -42,7 +42,7 @@ const sendWhatsAppMessage = async (user, email) => {
     });
   });
 
-  // بيانات الرسالة
+  // message data information
   var postData = JSON.stringify({
     messages: [
       {
@@ -62,10 +62,8 @@ const sendWhatsAppMessage = async (user, email) => {
     ],
   });
 
-  // إرسال الطلب
   req.write(postData);
 
-  // إنهاء الطلب
   req.end();
 };
 
