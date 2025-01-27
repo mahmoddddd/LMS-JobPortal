@@ -373,17 +373,16 @@ const forgetPasswoordToken = asyncHandler(async (req, res) => {
   }
 
   try {
-    // إنشاء رمز إعادة تعيين كلمة المرور
+    // create Password Reset Token
     const token = await user.createPasswordResetToken();
-    await user.save(); // حفظ التوكن في قاعدة البيانات
+    await user.save(); // Save the tokken in the database
 
-    // إنشاء رابط إعادة تعيين كلمة المرور
+    // link To Reset Password
     const resetLink = `http://localhost:${process.env.PORT}/api/user/reset-password/${token}`;
 
-    // إرسال رسالة WhatsApp
+    // send WhatsApp
     await sendWhatsAppMessage(user, email);
 
-    // إعداد بيانات البريد الإلكتروني
     const emailData = {
       to: email,
       text: `Hello ${user.firstname},\nPlease use the following link to reset your password: ${resetLink}`,
@@ -394,7 +393,6 @@ const forgetPasswoordToken = asyncHandler(async (req, res) => {
     const userOne = await User.findOne({ email: email });
 
     console.log(userOne.firstname);
-    // إرسال البريد الإلكتروني
     await sendEmail(emailData);
 
     res.status(200).json({

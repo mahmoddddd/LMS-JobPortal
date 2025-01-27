@@ -5,11 +5,9 @@ let userSchema = new mongoose.Schema(
   {
     firstname: {
       type: String,
-      required: true,
     },
     lastname: {
       type: String,
-      required: true,
     },
     user_imag: {
       type: String,
@@ -23,13 +21,14 @@ let userSchema = new mongoose.Schema(
     },
     mobile: {
       type: String,
-      required: true,
       unique: true,
       index: true,
     },
     password: {
       type: String,
-      required: true,
+      required: function () {
+        return !this.googleId;
+      },
     },
     roles: {
       type: String,
@@ -37,7 +36,9 @@ let userSchema = new mongoose.Schema(
     },
     profession: {
       type: String,
-      required: true,
+      required: function () {
+        return !this.googleId;
+      },
     },
     isBlocked: {
       type: Boolean,
@@ -54,11 +55,15 @@ let userSchema = new mongoose.Schema(
     stripe_account_id: String,
     stripe_seller: {},
     stripe_Session: {},
+    googleId: {
+      type: String,
+      unique: true,
+      sparse: true,
+    },
   },
   { timestamps: true }
 );
 
-// ========================
 // Middleware: Password Hashing
 // ========================
 // This middleware is triggered before saving a user document to the database.
@@ -102,14 +107,9 @@ userSchema.methods.createPasswordResetToken = async function () {
     .update(resetToken)
     .digest("hex");
 
-  // Set the token expiration time (30 minutes from the current time)
   this.passwordResetExpires = Date.now() + 30 * 60 * 1000; // 30 minutes in milliseconds
 
-  return resetToken; // Return the raw (unhashed) token to be sent to the user
+  return resetToken;
 };
 
-// ========================
-// Export the User Model
-// ========================
-// This ensures the schema is registered with Mongoose and can be used to interact with the database
 module.exports = mongoose.model("User", userSchema);
