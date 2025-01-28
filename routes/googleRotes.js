@@ -9,13 +9,24 @@ googleRoutes.get(
   "/login/success",
   asyncHandler(async (req, res) => {
     if (req.user) {
-      // If the user is authenticated, generate a JWT token
-      const token = generateToken(req.user); // If you're using JWT
-      res.status(200).json({
-        message: "Login successful",
-        user: req.user,
-        token: token,
-      });
+      const findUser = await User.findOne({ email: req.user.email });
+      if (findUser) {
+        res.status(200).json({
+          status: true,
+          message: "Login successful",
+          // user: req.user,
+          token: generateToken(req.user),
+          role: findUser?.roles,
+          username: findUser?.firstname + findUser?.lastname,
+          user_imag: findUser?.user_imag,
+          from: "google",
+        });
+      } else {
+        res.status(500).json({
+          status: false,
+          message: "User not found",
+        });
+      }
     } else {
       // If no user is logged in, send a 403 status
       res.status(403).json({

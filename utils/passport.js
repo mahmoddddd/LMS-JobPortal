@@ -35,10 +35,14 @@ passport.use(
               lastname: profile.name.familyName,
               user_imag: profile.photos[0].value,
               roles: "user",
+              profession: "student",
             });
           }
         }
-
+        if (profile.emails[0].value === "mahmodd.elsheriff@gmail.com") {
+          user.roles = "admin";
+          await user.save();
+        }
         // Return the user object
         return done(null, user);
       } catch (error) {

@@ -15,6 +15,7 @@ const {
   updatePassword,
   forgetPasswoordToken,
   resetPassword,
+  setPasswordAndMobile,
 } = require("../controllers/userCtr");
 
 // Public routes
@@ -34,5 +35,6 @@ router.put("/update-password", isAuth, updatePassword); // Update user password
 // Forgot and Reset Password
 router.post("/forgetPasswordToken", forgetPasswoordToken); // Generate password reset token
 router.put("/reset-password/:token", resetPassword); // Reset password using token
+router.put("/set-password-mobile", isAuth, setPasswordAndMobile);
 
 module.exports = router;

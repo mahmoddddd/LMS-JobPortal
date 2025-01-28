@@ -1,6 +1,8 @@
 const mongoose = require("mongoose");
 const bcrypt = require("bcrypt");
 const crypto = require("crypto");
+const { v4: uuidv4 } = require("uuid");
+
 let userSchema = new mongoose.Schema(
   {
     firstname: {
@@ -22,7 +24,8 @@ let userSchema = new mongoose.Schema(
     mobile: {
       type: String,
       unique: true,
-      index: true,
+      sparse: true,
+      default: () => uuidv4(),
     },
     password: {
       type: String,
@@ -31,6 +34,7 @@ let userSchema = new mongoose.Schema(
       },
     },
     roles: {
+      enum: ["user", "admin"],
       type: String,
       default: "user",
     },
@@ -51,7 +55,6 @@ let userSchema = new mongoose.Schema(
     passwordChangedAt: Date,
     passwordResetToken: String,
     passwordResetExpires: Date,
-    // stripe
     stripe_account_id: String,
     stripe_seller: {},
     stripe_Session: {},
@@ -60,48 +63,41 @@ let userSchema = new mongoose.Schema(
       unique: true,
       sparse: true,
     },
+    phoneVerified: {
+      type: Boolean,
+      default: false,
+    },
   },
   { timestamps: true }
 );
 
-// Middleware: Password Hashing
-// ========================
-// This middleware is triggered before saving a user document to the database.
 // It hashes the password only if it has been modified, preventing unnecessary rehashing.
 userSchema.pre("save", async function (next) {
   if (!this.isModified("password")) return next(); // Skip hashing if the password has not been modified
 
-  const saltRounds = 10; // Define the number of salt rounds for hashing
+  const saltRounds = 10;
   try {
-    const hashedPassword = await bcrypt.hash(this.password, saltRounds); // Hash the password using bcrypt
-    this.password = hashedPassword; // Replace the plain text password with the hashed password
-    next(); // Proceed to the next middleware or save operation
+    const hashedPassword = await bcrypt.hash(this.password, saltRounds);
+    this.password = hashedPassword;
+    next();
   } catch (error) {
-    return next(error); // Pass the error to the next middleware in case of failure
+    return next(error);
   }
 });
 
-// ========================
-// Method: Compare Passwords
-// ========================
 // This method compares a user-provided password with the hashed password stored in the database.
 userSchema.methods.comparePassword = async function (enteredPassword) {
   try {
-    return await bcrypt.compare(enteredPassword, this.password); // Return true if passwords match, false otherwise
+    return await bcrypt.compare(enteredPassword, this.password);
   } catch (error) {
-    throw new Error("Error comparing password"); // Throw an error if comparison fails
+    throw new Error("Error comparing password");
   }
 };
 
-// ========================
-// Method: Create Password Reset Token
-// ========================
 // This method generates a password reset token, hashes it, and sets expiration details.
 userSchema.methods.createPasswordResetToken = async function () {
-  // Generate a random token using 32 bytes and convert it to a hexadecimal string
   const resetToken = crypto.randomBytes(32).toString("hex");
 
-  // Hash the token using SHA-256 and store it in the passwordResetToken field
   this.passwordResetToken = crypto
     .createHash("sha256")
     .update(resetToken)

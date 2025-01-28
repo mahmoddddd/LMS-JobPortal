@@ -13,6 +13,7 @@ dotenv.config();
 const session = require("express-session");
 const googleRoutes = require("./routes/googleRotes.js");
 const path = require("path");
+const tutCategory = require("./routes/tutCategoryRotes.js");
 
 const app = express();
 dbConnect();
@@ -38,6 +39,8 @@ app.get("/", (req, res) => {
 
 app.use("/api/user", userRoutes);
 app.use("/", googleRoutes);
+app.use("/api/category", tutCategory);
+
 app.use(notfound);
 app.use(handerError);
 app.listen(PORT, () =>

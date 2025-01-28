@@ -7,15 +7,24 @@ const { createHash } = require("crypto");
 const crypto = require("crypto");
 const sendEmail = require("./emailCtrl");
 const { sendWhatsAppMessage } = require("./whatsappMessage");
+const bcrypt = require("bcrypt");
 
 /* Register A User */
 const registerAUser = asyncHandler(async (req, res) => {
   const { email, password, firstname, mobile, profession, lastname } = req.body;
-  const findUser = await User.findOne({ email });
+  if (!mobile) {
+    return res.status(400).json({
+      status: false,
+      message: "Please provide mobile number",
+    });
+  }
+  const findUser = await User.findOne({
+    $or: [{ email: email }, { mobile: mobile }],
+  });
   if (findUser) {
     return res.status(400).json({
       status: false,
-      message: "User already exists with this email",
+      message: "User already exists with this email or mobile already in use",
     });
   }
 
@@ -40,6 +49,7 @@ const registerAUser = asyncHandler(async (req, res) => {
         mobile: newUser.mobile,
         profession: newUser.profession,
         password: newUser.password,
+        phoneVerified: true,
       },
     });
   } catch (error) {
@@ -437,6 +447,48 @@ const resetPassword = asyncHandler(async (req, res) => {
   });
 });
 
+// Set A paassword and MObile Number If user signup with google
+const setPasswordAndMobile = asyncHandler(async (req, res) => {
+  const { password, mobile } = req.body;
+  const userId = req.user._id;
+
+  try {
+    const user = await User.findById(userId);
+
+    if (!user) {
+      return res.status(404).json({ message: "User not found" });
+    }
+
+    if (user.googleId && !user.password) {
+      const existingUser = await User.findOne({ mobile });
+      if (existingUser && existingUser._id.toString() !== userId) {
+        return res
+          .status(400)
+          .json({ message: "Mobile number already in use" });
+      }
+      const salt = await bcrypt.genSalt(10);
+      const hashedPassword = await bcrypt.hash(password, salt);
+      user.password = hashedPassword;
+      user.mobile = mobile;
+      user.phoneVerified = true;
+      await user.save();
+
+      return res.status(200).json({
+        message: "Password and mobile number updated successfully",
+        data: user,
+      });
+    }
+
+    return res.status(400).json({
+      message: "User did not sign up via Google or password already set", // if the user did not sign up via Google or password is already set
+    });
+  } catch (error) {
+    res
+      .status(500)
+      .json({ message: "Internal server error", error: error.message });
+  }
+});
+
 module.exports = {
   registerAUser,
   loginUser,
@@ -449,4 +501,5 @@ module.exports = {
   updatePassword,
   forgetPasswoordToken,
   resetPassword,
+  setPasswordAndMobile,
 };
