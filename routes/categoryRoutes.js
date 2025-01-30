@@ -8,7 +8,7 @@ const {
   getATutorialCategory,
   deleCategory,
   updateCategory,
-} = require("../controllers/tutCategory");
+} = require("../controllers/category");
 
 router.post("/post-tutorial-category", isAuth, isAdmin, postTutorialCategory);
 

@@ -13,8 +13,11 @@ dotenv.config();
 const session = require("express-session");
 const googleRoutes = require("./routes/googleRotes.js");
 const path = require("path");
-const tutCategory = require("./routes/tutCategoryRotes.js");
 
+const tutCategory = require("./routes/categoryRoutes.js");
+const tutRouter = require("./routes/tutorialRoutes.js");
+const newsLeterRoutes = require("./routes/newsLeterRoutes.js");
+const reviewsRoutes = require("./routes/reviewsRoutes.js");
 const app = express();
 dbConnect();
 app.use(
@@ -38,8 +41,11 @@ app.get("/", (req, res) => {
 });
 
 app.use("/api/user", userRoutes);
+app.use("/api/news", newsLeterRoutes);
+app.use("/api/review", reviewsRoutes);
 app.use("/", googleRoutes);
 app.use("/api/category", tutCategory);
+app.use("/api/tutorial", tutRouter);
 
 app.use(notfound);
 app.use(handerError);

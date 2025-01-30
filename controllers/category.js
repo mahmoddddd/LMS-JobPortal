@@ -36,7 +36,7 @@ const getAllTutCategories = asyncHandler(async (req, res) => {
     res.status(200).json({
       status: true,
       message: "Categories Fetched Successfully",
-      categories,
+      AllCat: [categories],
     });
   } catch (error) {
     throw new Error(error);
@@ -92,6 +92,7 @@ const updateCategory = asyncHandler(async (req, res) => {
     throw new Error(error);
   }
 });
+
 module.exports = {
   postTutorialCategory,
   getAllTutCategories,
