@@ -34,12 +34,13 @@ let userSchema = new mongoose.Schema(
       },
     },
     roles: {
-      enum: ["user", "admin"],
+      enum: ["user", "admin", "instructor"],
       type: String,
       default: "user",
     },
     profession: {
       type: String,
+      // default: "student",
       required: function () {
         return !this.googleId;
       },

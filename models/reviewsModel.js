@@ -1,6 +1,6 @@
 const mongoose = require("mongoose");
 
-const reviewSchema = new mongoose.Schema(
+let reviewSchema = new mongoose.Schema(
   {
     user: {
       type: mongoose.Schema.Types.ObjectId,
@@ -11,11 +11,16 @@ const reviewSchema = new mongoose.Schema(
       type: String,
       required: true,
     },
+    isApproved: {
+      type: Boolean,
+      default: false,
+    },
     tutorial_id: {
       type: mongoose.Schema.Types.ObjectId,
       ref: "Tutorial",
       required: true,
     },
+
     color: {
       type: String,
       required: true,

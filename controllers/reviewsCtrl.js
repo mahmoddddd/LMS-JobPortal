@@ -65,15 +65,15 @@ const getAllReviews = asyncHandler(async (req, res) => {
 // Get a single review by ID
 const getReview = asyncHandler(async (req, res) => {
   const { id } = req.params; // Review ID from request parameters
-  validateMongoDbId(id); // Validate the ID
+  validateMongoDbId(id);
 
   try {
-    const review = await Review.findById(id); // Find review by ID
+    const review = await Review.findById(id);
 
     if (!review) {
       return res.status(404).json({
         status: false,
-        message: "Review not found", // Review not found
+        message: "Review not found",
       });
     }
 
@@ -85,34 +85,33 @@ const getReview = asyncHandler(async (req, res) => {
   } catch (error) {
     res.status(500).json({
       status: false,
-      message: "Error fetching review: " + error.message, // Error fetching review
+      message: "Error fetching review: " + error.message,
     });
   }
 });
 
 // Update a review by ID
-const updateReview = asyncHandler(async (req, res) => {
-  const { id } = req.params; // Review ID from request parameters
-  validateMongoDbId(id); // Validate the ID
+const updateReviewStatus = asyncHandler(async (req, res) => {
+  const { id } = req.params;
+  validateMongoDbId(id);
 
   try {
-    const { comment, color } = req.body; // Review fields to update
+    const { isApproved } = req.body;
 
-    // Find the review by ID
     const review = await Review.findById(id);
 
     if (!review) {
       return res.status(404).json({
         status: false,
-        message: "Review not found", // Review not found
+        message: "Review not found",
       });
     }
 
-    // Update the review's fields
-    if (comment) review.comment = comment;
-    if (color) review.color = color;
+    if (isApproved) {
+      review.isApproved = isApproved;
+    }
 
-    const updatedReview = await review.save(); // Save the updated review
+    const updatedReview = await review.save();
 
     res.status(200).json({
       status: true,
@@ -122,7 +121,7 @@ const updateReview = asyncHandler(async (req, res) => {
   } catch (error) {
     res.status(500).json({
       status: false,
-      message: "Error updating review: " + error.message, // Error updating review
+      message: "Error updating review: " + error.message,
     });
   }
 });
@@ -138,7 +137,7 @@ const DeleteAReview = asyncHandler(async (req, res) => {
     if (!deleteReview) {
       return res.status(404).json({
         status: false,
-        message: "Review not found", // Review not found
+        message: "Review not found",
       });
     }
 
@@ -149,7 +148,7 @@ const DeleteAReview = asyncHandler(async (req, res) => {
   } catch (error) {
     res.status(404).json({
       status: false,
-      message: "Error deleting review: " + error.message, // Error deleting review
+      message: "Error deleting review: " + error.message,
     });
   }
 });
@@ -159,5 +158,5 @@ module.exports = {
   getAllReviews,
   getReview,
   DeleteAReview,
-  updateReview,
+  updateReviewStatus,
 };

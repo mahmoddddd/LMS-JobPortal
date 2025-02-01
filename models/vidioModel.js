@@ -1,38 +1,29 @@
 const mongoose = require("mongoose");
 
-let tutorialSchema = new mongoose.Schema(
+let vidioSchema = new mongoose.Schema(
   {
     title: {
       type: String,
       required: true,
-      unique: true,
     },
     userId: {
       type: mongoose.Schema.Types.ObjectId,
       ref: "User",
       required: true,
     },
-
     slug: {
       type: String,
       required: true,
-      unique: true,
-      index: true,
     },
-    tutorialCategory: {
+    thumbnail: {
+      type: String,
+      default: "https://cdn-icons-png.flaticon.com/512/149/149071.png",
+    },
+    description: {
       type: String,
       required: true,
     },
-    tutorialCategorySlug: {
-      type: String,
-      required: true,
-    },
-    topicName: {
-      type: String,
-      unique: true,
-      required: true,
-    },
-    content: {
+    video_Url: {
       type: String,
       required: true,
     },
@@ -40,14 +31,10 @@ let tutorialSchema = new mongoose.Schema(
       type: [],
       required: true,
     },
-    imag: {
-      type: String,
-      default: "https://cdn-icons-png.flaticon.com/512/149/149071.png",
-    },
   },
   {
     timestamps: true,
   }
 );
 
-module.exports = mongoose.model("Tutorial", tutorialSchema);
+module.exports = mongoose.model("Vidio", vidioSchema);

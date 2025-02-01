@@ -12,11 +12,11 @@ const isAuth = asyncHandler(async (req, res, next) => {
     try {
       // Extract the token from the header
       token = req.headers.authorization.split(" ")[1];
-      // console.log("Token extracted:", token); // Debugging
+      // console.log("Token extracted:", token); // Debuggs
 
       // Verify the token
       const decoded = jwt.verify(token, process.env.JWT_SECRET);
-      // console.log("Decoded token payload:", decoded); // Debugging
+      // console.log("Decoded token payload:", decoded); // Debugg
 
       // Find the user in the database and attach it to the request object
       const user = await User.findById(decoded.id).select("-password");
@@ -30,7 +30,7 @@ const isAuth = asyncHandler(async (req, res, next) => {
       }
 
       req.user = user;
-      //  console.log("User attached to request:", req.user); // Debugging
+      //  console.log("User attached to request:", req.user); // Debugg
       next();
     } catch (error) {
       return res.status(401).json({

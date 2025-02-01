@@ -18,6 +18,8 @@ const tutCategory = require("./routes/categoryRoutes.js");
 const tutRouter = require("./routes/tutorialRoutes.js");
 const newsLeterRoutes = require("./routes/newsLeterRoutes.js");
 const reviewsRoutes = require("./routes/reviewsRoutes.js");
+const contactRoutes = require("./routes/contactRoutes");
+const vidioRoutes = require("./routes/vidioRoutes");
 const app = express();
 dbConnect();
 app.use(
@@ -41,8 +43,10 @@ app.get("/", (req, res) => {
 });
 
 app.use("/api/user", userRoutes);
+app.use("/api/vidio", vidioRoutes);
 app.use("/api/news", newsLeterRoutes);
 app.use("/api/review", reviewsRoutes);
+app.use("/api/contact", contactRoutes);
 app.use("/", googleRoutes);
 app.use("/api/category", tutCategory);
 app.use("/api/tutorial", tutRouter);
