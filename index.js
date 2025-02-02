@@ -20,6 +20,7 @@ const newsLeterRoutes = require("./routes/newsLeterRoutes.js");
 const reviewsRoutes = require("./routes/reviewsRoutes.js");
 const contactRoutes = require("./routes/contactRoutes");
 const vidioRoutes = require("./routes/vidioRoutes");
+const aiRoutes = require("./routes/aiRoutes");
 const app = express();
 dbConnect();
 app.use(
@@ -41,6 +42,7 @@ app.use(bodyParser.urlencoded({ extended: false }));
 app.get("/", (req, res) => {
   res.send(`<a href="http://localhost:4000/google">Login with Google</a>`);
 });
+app.use("/api/ai", aiRoutes);
 
 app.use("/api/user", userRoutes);
 app.use("/api/vidio", vidioRoutes);
