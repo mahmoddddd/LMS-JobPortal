@@ -63,6 +63,20 @@ const isAdmin = asyncHandler(async (req, res, next) => {
   }
 });
 
+const isBoth = asyncHandler(async (req, res, next) => {
+  const { email } = req.body;
+  const isBoth = await User.findOne({ email: email });
+  if (isBothroles !== "admin" && isBoth.roles !== "instructor") {
+    return res.status(403).json({
+      status: false,
+      message:
+        "Access denied. You do not have the required instructor or Admin privileges.",
+    });
+  } else {
+    next();
+  }
+});
+
 // Middleware to check if the user is an instructor
 const isInstructor = asyncHandler(async (req, res, next) => {
   if (req.user && req.user.roles === "instructor") {

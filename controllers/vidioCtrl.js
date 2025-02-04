@@ -1,30 +1,46 @@
 const { default: slugify } = require("slugify");
 const Vidio = require("../models/vidioModel");
+const VidioCat = require("../models/vidioCatModel");
 const asyncHandler = require("express-async-handler");
 const validateMongoDbId = require("../config/validateMongoDb");
-
+const mongoose = require("mongoose");
 const postVidio = asyncHandler(async (req, res) => {
   try {
-    const { title, description, video_Url, keywords } = req.body;
+    const { title, description, video_Url, categoryId, keywords } = req.body;
 
-    if (!title || !description || !video_Url || !keywords) {
+    if (!title || !description || !video_Url || !categoryId || !keywords) {
       return res.status(400).json({
         status: false,
         message: "All fields are required!",
       });
     }
 
+    // Validate if category is a valid ObjectId
+    if (!mongoose.Types.ObjectId.isValid(categoryId)) {
+      return res.status(400).json({
+        status: false,
+        message: "Invalid category ID",
+      });
+    }
+
+    if (!Array.isArray(keywords)) {
+      return res.status(400).json({
+        status: false,
+        message: "Keywords must be an array",
+      });
+    }
     // Generate a slug from the title
     req.body.slug = slugify(title.toLowerCase());
 
     // Assign the user ID from the authenticated request
     req.body.userId = req.user._id;
 
-    const vidio = await Vidio.create(req.body);
+    const vidio = await Vidio.create({ ...req.body, category: categoryId });
 
     res.status(201).json({
       status: true,
       message: "Vidio Posted Successfully",
+      category: categoryId,
       vidio,
     });
   } catch (error) {

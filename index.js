@@ -21,6 +21,11 @@ const reviewsRoutes = require("./routes/reviewsRoutes.js");
 const contactRoutes = require("./routes/contactRoutes");
 const vidioRoutes = require("./routes/vidioRoutes");
 const aiRoutes = require("./routes/aiRoutes");
+const docRoutes = require("./routes/docRoutes");
+const docCatRoutes = require("./routes/docCatRoutes");
+const blogRoutes = require("./routes/blogRoutes.js");
+const blogCatRoutes = require("./routes/blogCatRoutes.js");
+const vidioCatRoutes = require("./routes/vidioCatRoutes");
 const app = express();
 dbConnect();
 app.use(
@@ -43,9 +48,13 @@ app.get("/", (req, res) => {
   res.send(`<a href="http://localhost:4000/google">Login with Google</a>`);
 });
 app.use("/api/ai", aiRoutes);
-
+app.use("/api/doc", docRoutes);
+app.use("/api/doc/category", docCatRoutes);
+app.use("/api/blog", blogRoutes);
+app.use("/api/blog/category", blogCatRoutes);
 app.use("/api/user", userRoutes);
 app.use("/api/vidio", vidioRoutes);
+app.use("/api/vidio/category", vidioCatRoutes);
 app.use("/api/news", newsLeterRoutes);
 app.use("/api/review", reviewsRoutes);
 app.use("/api/contact", contactRoutes);

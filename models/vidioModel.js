@@ -15,6 +15,12 @@ let vidioSchema = new mongoose.Schema(
       type: String,
       required: true,
     },
+
+    category: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "VidioCat",
+      required: [true, "Category is required"],
+    },
     thumbnail: {
       type: String,
       default: "https://cdn-icons-png.flaticon.com/512/149/149071.png",
