@@ -4,17 +4,19 @@ let vidioCatSchema = new mongoose.Schema(
   {
     title: {
       type: String,
-      required: [true, "Title is required"], // Added custom error message
-      trim: true, // Remove unnecessary spaces
+      required: [true, "Title is required"],
+      trim: true,
+      unique: true,
     },
     userId: {
       type: mongoose.Schema.Types.ObjectId,
       ref: "User",
-      required: [true, "User ID is required"], // Added custom error message
+      required: [true, "User ID is required"],
     },
     slug: {
       type: String,
-      required: [true, "Slug is required"], // Added custom error message
+      required: [true, "Slug is required"],
+      unique: true,
     },
   },
 

@@ -64,17 +64,34 @@ const isAdmin = asyncHandler(async (req, res, next) => {
 });
 
 const isBoth = asyncHandler(async (req, res, next) => {
-  const { email } = req.body;
-  const isBoth = await User.findOne({ email: email });
-  if (isBothroles !== "admin" && isBoth.roles !== "instructor") {
+  if (!req.user) {
+    return res.status(401).json({
+      status: false,
+      message: "Unauthorized. Please log in.",
+    });
+  }
+
+  // Fetch the user's roles from the database (if not already available in req.user)
+  const user = await User.findById(req.user._id).select("roles");
+
+  if (!user) {
+    return res.status(404).json({
+      status: false,
+      message: "User not found.",
+    });
+  }
+
+  // Check if the user has either "admin" or "instructor" role
+  if (!user.roles.includes("admin") && !user.roles.includes("instructor")) {
     return res.status(403).json({
       status: false,
       message:
-        "Access denied. You do not have the required instructor or Admin privileges.",
+        "Access denied. You do not have the required instructor or admin privileges.",
     });
-  } else {
-    next();
   }
+
+  // If the user has the required role, proceed to the next middleware/route handler
+  next();
 });
 
 // Middleware to check if the user is an instructor
@@ -95,4 +112,4 @@ const isInstructor = asyncHandler(async (req, res, next) => {
   }
 });
 
-module.exports = { isAuth, isAdmin, isInstructor };
+module.exports = { isAuth, isAdmin, isInstructor, isBoth };
