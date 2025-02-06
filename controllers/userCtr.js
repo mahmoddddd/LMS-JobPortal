@@ -11,7 +11,8 @@ const bcrypt = require("bcrypt");
 
 /* Register A User */
 const registerAUser = asyncHandler(async (req, res) => {
-  const { email, password, firstname, mobile, profession, lastname } = req.body;
+  const { email, password, firstname, mobile, profession, lastname, roles } =
+    req.body;
   if (!mobile) {
     return res.status(400).json({
       status: false,
@@ -28,6 +29,16 @@ const registerAUser = asyncHandler(async (req, res) => {
     });
   }
 
+  let userRole = roles;
+  if (roles === "admin") {
+    return res.status(400).json({
+      status: false,
+      message: "You cannot make yourself an admin",
+    });
+  } else if (roles !== "instructor" && roles !== "user") {
+    userRole = "user";
+  }
+
   try {
     const newUser = await User.create({
       email,
@@ -36,6 +47,7 @@ const registerAUser = asyncHandler(async (req, res) => {
       mobile,
       profession,
       lastname,
+      roles: userRole,
     });
 
     res.status(201).json({

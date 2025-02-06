@@ -3,7 +3,6 @@ const router = express.Router();
 const {
   isAuth,
   isAdmin,
-  isInstructor,
   isBoth, // admin and instructors
 } = require("../middlewares/authMiddleware");
 const {

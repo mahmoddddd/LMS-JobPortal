@@ -36,8 +36,9 @@ let userSchema = new mongoose.Schema(
     roles: {
       enum: ["user", "admin", "instructor"],
       type: String,
-      default: ["user"],
+      default: "user",
     },
+
     profession: {
       type: String,
       // default: "student",

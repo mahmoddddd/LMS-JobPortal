@@ -112,4 +112,63 @@ const isInstructor = asyncHandler(async (req, res, next) => {
   }
 });
 
-module.exports = { isAuth, isAdmin, isInstructor, isBoth };
+// Middleware to check course ownership
+const Course = require("../models/courseModel");
+const isCourseOwner = asyncHandler(async (req, res, next) => {
+  const { id } = req.params;
+
+  const course = await Course.findById(id);
+  if (!course) {
+    return res.status(404).json({
+      status: false,
+      message: "Course not found.",
+    });
+  }
+
+  if (
+    course.instructor.toString() !== req.user._id.toString() &&
+    req.user.role !== "admin"
+  ) {
+    return res.status(403).json({
+      status: false,
+      message: "You are not authorized to modify this course.",
+    });
+  }
+
+  next();
+});
+
+// Middleware to check course category ownership
+const CourseCat = require("../models/courseCategoryModel");
+const isCourseCatOwner = asyncHandler(async (req, res, next) => {
+  const { id } = req.params;
+
+  const courseCat = await CourseCat.findById(id);
+  if (!courseCat) {
+    return res.status(404).json({
+      status: false,
+      message: "Course Category not found.",
+    });
+  }
+
+  if (
+    courseCat.instructor.toString() !== req.user._id.toString() &&
+    req.user.role !== "admin"
+  ) {
+    return res.status(403).json({
+      status: false,
+      message: "You are not authorized to modify this course category.",
+    });
+  }
+
+  next();
+});
+
+module.exports = {
+  isAuth,
+  isAdmin,
+  isInstructor,
+  isBoth,
+  isCourseOwner,
+  isCourseCatOwner,
+};

@@ -3,7 +3,8 @@ const Course = require("../models/courseModel");
 const slugify = require("slugify");
 const mongoose = require("mongoose");
 const courseCat = require("../models/courseCategoryModel");
-
+const User = require("../models/userModel");
+const validateMongoDbId = require("../config/validateMongoDb");
 const createCourse = asyncHandler(async (req, res) => {
   const {
     title,
@@ -38,6 +39,7 @@ const createCourse = asyncHandler(async (req, res) => {
       status: false,
       message: "Invalid category ID.",
     });
+    s;
   }
 
   // Validate price (must be a non-negative number)
@@ -78,19 +80,19 @@ const createCourse = asyncHandler(async (req, res) => {
       message: "Course with this title already exists.",
     });
   }
-
+  const instructor = req.user.id;
   // Create the new course
   const newCourse = await Course.create({
     title,
     slug,
     description,
-    instructor: req.user._id, // Associate the course with the logged-in user
     category,
+    instructor: instructor,
     price,
-    image: image || "https://cdn-icons-png.flaticon.com/512/149/149071.png", // Default image if not provided
-    isPublished: isPublished || false, // Default to unpublished if not provided
+    image: image || "https://cdn-icons-png.flaticon.com/512/149/149071.png",
+    isPublished: isPublished || false,
     totalHours,
-    totleRating: totleRating || 0, // Default to 0 if not provided
+    totleRating: totleRating || 0,
   });
 
   // Return success response with the created course
@@ -98,6 +100,7 @@ const createCourse = asyncHandler(async (req, res) => {
     status: true,
     message: "Course created successfully.",
     course: newCourse,
+    instructor,
   });
 });
 
@@ -109,8 +112,8 @@ const getAllCourses = asyncHandler(async (req, res) => {
 
   const courses = await Course.find({ deletedAt: null })
     .skip(skip)
-    .limit(limit)
-    .populate("instructor category");
+    .limit(limit);
+  //  .populate("instructor category");
 
   const totalCourses = await Course.countDocuments({ deletedAt: null });
 
@@ -152,6 +155,8 @@ const getCourseBySlug = asyncHandler(async (req, res) => {
 
 const updateCourse = asyncHandler(async (req, res) => {
   const { id } = req.params;
+  validateMongoDbId(id);
+
   const { title, description, category, price, isPublished } = req.body;
 
   let course = await Course.findById(id);
@@ -198,13 +203,7 @@ const updateCourse = asyncHandler(async (req, res) => {
 // DELETE - Delete a Course
 const deleteCourse = asyncHandler(async (req, res) => {
   const { id } = req.params;
-
-  if (!mongoose.Types.ObjectId.isValid(id)) {
-    return res.status(400).json({
-      status: false,
-      message: "Invalid course ID.",
-    });
-  }
+  validateMongoDbId(id);
 
   // search about course
   const course = await Course.findById(id);
@@ -229,10 +228,57 @@ const deleteCourse = asyncHandler(async (req, res) => {
   });
 });
 
+// Get all Courses By Category
+const courseByCategory = asyncHandler(async (req, res) => {
+  const { slug } = req.params;
+
+  const category = await courseCat.findOne({ slug });
+  if (!category) {
+    return res.status(404).json({
+      status: false,
+      message: "Category not found.",
+    });
+  }
+
+  const courses = await Course.find({ category: category._id });
+
+  res.status(200).json({
+    status: true,
+    message: "Courses fetched successfully.",
+    data: courses,
+    deletedAt: null,
+  });
+});
+
+// Get Pariquler instructor Course
+const particularInstructorCourse = asyncHandler(async (req, res) => {
+  const { id } = req.params;
+
+  const instructor = await User.findById(id);
+  if (!instructor || !["instructor", "admin"].includes(instructor.roles)) {
+    return res.status(404).json({
+      status: false,
+      message: "Instructor not found.",
+    });
+  }
+
+  const courses = await Course.find({
+    instructor: instructor._id,
+    deletedAt: null,
+  });
+
+  res.status(200).json({
+    status: true,
+    message: "Courses fetched successfully.",
+    data: courses,
+  });
+});
 module.exports = {
   createCourse,
   getAllCourses,
   getCourseBySlug,
   updateCourse,
   deleteCourse,
+  courseByCategory,
+  particularInstructorCourse,
 };

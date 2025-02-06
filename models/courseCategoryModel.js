@@ -7,6 +7,7 @@ let courseCategorySchema = new mongoose.Schema(
       required: true,
       unique: true,
     },
+
     slug: {
       type: String,
       required: true,
