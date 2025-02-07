@@ -4,10 +4,10 @@ const resultSchema = new mongoose.Schema(
       type: mongoose.Schema.Types.ObjectId,
       ref: "User",
       required: true,
-    }, // ID الطالب
-    score: { type: Number, required: true }, // عدد الإجابات الصحيحة
-    total_questions: { type: Number, required: true }, // عدد الأسئلة الكلي
-    quiz_date: { type: Date, default: Date.now }, // تاريخ الاختبار
+    },
+    score: { type: Number, required: true },
+    total_questions: { type: Number, required: true },
+    quiz_date: { type: Date, default: Date.now },
   },
   { timestamps: true }
 );
