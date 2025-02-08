@@ -24,7 +24,6 @@ const createLesson = asyncHandler(async (req, res) => {
     }
 
     const instructor = req.user;
-
     if (course.instructor.toString() !== instructor._id.toString()) {
       return res.status(403).json({
         status: false,
@@ -50,7 +49,8 @@ const createLesson = asyncHandler(async (req, res) => {
       lessonSlug = `${lessonSlug}-${Date.now()}`;
     }
 
-    req.body.instructor = instructor._id;
+    req.body.userId = instructor._id;
+
     req.body.slug = lessonSlug;
 
     const lesson = await Lesson.create(req.body);

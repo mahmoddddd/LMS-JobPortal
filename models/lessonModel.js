@@ -10,6 +10,10 @@ const lessonSchema = new mongoose.Schema(
       maxLength: 100,
       trim: true,
     },
+    slug: {
+      type: String,
+      required: true,
+    },
     content: {
       type: String,
       minLength: 200,
