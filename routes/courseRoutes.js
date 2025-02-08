@@ -14,6 +14,7 @@ const {
   deleteCourse,
   courseByCategory,
   particularInstructorCourse,
+  getInstructorCourses,
 } = require("../controllers/courseCtrl");
 
 //  Create a course (Requires authentication + must be Instructor or Admin)
@@ -27,6 +28,9 @@ router.get("/by-cat/:slug", courseByCategory);
 
 //  Get courses by instructor ID (Public access)
 router.get("/instructor/:id", particularInstructorCourse);
+
+// Get My Courses (Public access)
+router.get("/my-courses", isAuth, isBoth, getInstructorCourses);
 
 //  Get a single course by slug (Public access)
 router.get("/:slug", getCourseBySlug);

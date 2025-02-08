@@ -54,6 +54,14 @@ const courseSchema = new mongoose.Schema(
       type: Number,
       default: 0,
     },
+    students: [
+      {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: "User",
+        default: null,
+      },
+    ],
+
     enrolled: {
       type: Number,
       default: 0,

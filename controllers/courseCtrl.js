@@ -271,8 +271,46 @@ const particularInstructorCourse = asyncHandler(async (req, res) => {
     status: true,
     message: "Courses fetched successfully.",
     data: courses,
+    totalCourses: courses.length,
   });
 });
+
+const getInstructorCourses = asyncHandler(async (req, res) => {
+  // Get the authenticated instructor
+  const instructorAccount = req.user;
+
+  // Ensure the user has an instructor or admin role
+  if (
+    !instructorAccount ||
+    !["instructor", "admin"].includes(instructorAccount.roles)
+  ) {
+    return res.status(403).json({
+      status: false,
+      message: "Access denied. Only instructors and admins can view courses.",
+    });
+  }
+
+  try {
+    // Retrieve courses assigned to the instructor
+    const assignedCourses = await Course.find({
+      instructor: instructorAccount._id,
+      deletedAt: null,
+    });
+
+    res.status(200).json({
+      status: true,
+      message: "Instructor courses retrieved successfully.",
+      data: assignedCourses,
+      totalCourses: assignedCourses.length,
+    });
+  } catch (error) {
+    res.status(500).json({
+      status: false,
+      message: "Server error. Please try again later.",
+    });
+  }
+});
+
 module.exports = {
   createCourse,
   getAllCourses,
@@ -281,4 +319,5 @@ module.exports = {
   deleteCourse,
   courseByCategory,
   particularInstructorCourse,
+  getInstructorCourses,
 };

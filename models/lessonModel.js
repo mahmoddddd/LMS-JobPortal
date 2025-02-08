@@ -1,5 +1,5 @@
 const mongoose = require("mongoose");
-const { MAX } = require("uuid");
+
 const lessonSchema = new mongoose.Schema(
   {
     title: {
@@ -9,10 +9,6 @@ const lessonSchema = new mongoose.Schema(
       minLength: 3,
       maxLength: 100,
       trim: true,
-    },
-    slug: {
-      type: String,
-      required: true,
     },
     content: {
       type: String,
