@@ -10,16 +10,24 @@ const lessonSchema = new mongoose.Schema(
       maxLength: 100,
       trim: true,
     },
+    courseId: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "Course",
+      required: true,
+    },
     slug: {
       type: String,
       required: true,
+      unique: true,
     },
     content: {
       type: String,
-      minLength: 200,
+      minLength: 50,
+      required: true,
     },
-    video: {
+    vidio: {
       type: String,
+      required: true,
     },
     free_preview: {
       type: Boolean,

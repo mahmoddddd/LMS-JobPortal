@@ -3,12 +3,12 @@ const dotenv = require("dotenv");
 const dbConnect = require("./config/dbConnect");
 const bodyParser = require("body-parser");
 
+const limiter = require("./utils/limitRequests");
 const { notfound, handerError } = require("./middlewares/errorHandler");
 const userRoutes = require("./routes/userRoutes.js");
-const { Store } = require("express-session");
 const MongoStore = require("connect-mongo");
 const passport = require("passport");
-const passportSetup = require("./utils/passport"); // error if not found !!!!!
+const passportSetup = require("./utils/passport");
 dotenv.config();
 const session = require("express-session");
 const googleRoutes = require("./routes/googleRotes.js");
@@ -28,35 +28,41 @@ const blogCatRoutes = require("./routes/blogCatRoutes.js");
 const vidioCatRoutes = require("./routes/vidioCatRoutes");
 const courseCatRoutes = require("./routes/courseCatRoutes");
 const courseRoutes = require("./routes/courseRoutes");
-const lseeonRoutes = require("./routes/lessonRoutes");
+const lessonRoutes = require("./routes/lessonRoutes.js");
+const { default: rateLimit } = require("express-rate-limit");
 
 const app = express();
 dbConnect();
+
 app.use(
   session({
     resave: false,
     saveUninitialized: true,
     secret: "secret",
-    Store: MongoStore.create({ mongoUrl: process.env.MONGO_URL }),
+    store: MongoStore.create({ mongoUrl: process.env.MONGO_URL }),
     ttl: 60 * 60 * 24, // 1 day
   })
 );
 
 app.use(passport.initialize());
 app.use(passport.session());
+
 const PORT = process.env.PORT || 5000;
+
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: false }));
+
+app.use("/api", limiter(15 * 60 * 1000, 50, "Too many requests from this IP"));
 
 app.get("/", (req, res) => {
   res.send(`<a href="http://localhost:4000/google">Login with Google</a>`);
 });
-app.use("/api/ai", aiRoutes);
+app.set("trust proxy", 1);
 
+app.use("/api/ai", aiRoutes);
 app.use("/api/course", courseRoutes);
 app.use("/api/course/category", courseCatRoutes);
-app.use("/api/lesson", lseeonRoutes);
-
+app.use("/api/lesson", lessonRoutes);
 app.use("/api/doc", docRoutes);
 app.use("/api/doc/category", docCatRoutes);
 app.use("/api/blog", blogRoutes);
@@ -73,6 +79,7 @@ app.use("/api/tutorial", tutRouter);
 
 app.use(notfound);
 app.use(handerError);
+
 app.listen(PORT, () =>
-  console.log(`Server is Running on port  http://localhost:${PORT}`)
+  console.log(`Server is Running on port http://localhost:${PORT}`)
 );
