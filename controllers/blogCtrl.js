@@ -100,9 +100,9 @@ const getBlogBySlug = asyncHandler(async (req, res) => {
 const getAllBlogs = asyncHandler(async (req, res) => {
   try {
     // Fetch all blogs and populate user and category details
-    const blogs = await Blog.find()
-      .populate("userId", "firstname  email")
-      .populate("category", "title");
+    const blogs = await Blog.find();
+    // .populate("userId", "firstname  email")
+    //.populate("category", "title");
 
     if (!blogs || blogs.length === 0) {
       return res.status(404).json({
@@ -132,9 +132,9 @@ const deleteBlog = asyncHandler(async (req, res) => {
   validateMongoDbId(id);
 
   try {
-    const blog = await Blog.findByIdAndDelete(id);
+    const deletedBlog = await Blog.findByIdAndDelete(id);
 
-    if (!blog) {
+    if (!deletedBlog) {
       return res.status(404).json({
         status: false,
         message: "Blog not found",
@@ -144,7 +144,7 @@ const deleteBlog = asyncHandler(async (req, res) => {
     res.status(200).json({
       status: true,
       message: "Blog deleted successfully",
-      blog,
+      deletedBlog,
     });
   } catch (error) {
     res.status(500).json({
@@ -165,7 +165,6 @@ const updateBlog = asyncHandler(async (req, res) => {
     if (req.body.title) {
       req.body.slug = slugify(req.body.title.toLowerCase());
     }
-
     const updatedBlog = await Blog.findByIdAndUpdate(id, req.body, {
       new: true, // Return the updated document
     });

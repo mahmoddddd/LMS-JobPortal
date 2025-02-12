@@ -164,6 +164,47 @@ const isCourseCatOwner = asyncHandler(async (req, res, next) => {
   next();
 });
 
+const restrictTo = (...roles) => {
+  return asyncHandler(async (req, res, next) => {
+    if (!req.user || !req.user.roles) {
+      return res.status(401).json({
+        status: false,
+        message: "Unauthorized. Please log in to access this resource.",
+      });
+    }
+
+    if (!roles.some((role) => req.user.roles.includes(role))) {
+      return res.status(403).json({
+        status: false,
+        message: "Access denied. You do not have the required privileges.",
+      });
+    }
+
+    next();
+  });
+};
+
+// Middleware to check blog ownership
+const Blog = require("../models/blogModel");
+const isBlogOwner = asyncHandler(async (req, res, next) => {
+  const { id } = req.params;
+
+  const blog = await Blog.findById(id);
+  if (!blog) {
+    return res.status(404).json({ status: false, message: "Blog not found" });
+  }
+  if (req.user.id !== blog.userId.toString() && req.user.roles !== "admin") {
+    return res.status(403).json({
+      status: false,
+      message: "You are not authorized to modify this blog.",
+    });
+  }
+
+  next();
+});
+
+module.exports = isBlogOwner;
+
 module.exports = {
   isAuth,
   isAdmin,
@@ -171,4 +212,6 @@ module.exports = {
   isBoth,
   isCourseOwner,
   isCourseCatOwner,
+  isBlogOwner,
+  restrictTo,
 };

@@ -5,6 +5,7 @@ const {
   isAdmin,
   isBoth, // admin and instructors
   isCourseOwner,
+  restrictTo,
 } = require("../middlewares/authMiddleware");
 const {
   createCourse,
@@ -21,7 +22,7 @@ const {
 router.post("/", isAuth, isBoth, createCourse);
 
 //  Get all courses (Public access)
-router.get("/", getAllCourses);
+router.get("/", isAuth, restrictTo("admin", "instructor"), getAllCourses);
 
 //  Get courses by category (Public access)
 router.get("/by-cat/:slug", courseByCategory);

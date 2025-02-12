@@ -114,7 +114,6 @@ const getAllCourses = asyncHandler(async (req, res) => {
     .skip(skip)
     .limit(limit);
   //  .populate("instructor category");
-
   const totalCourses = await Course.countDocuments({ deletedAt: null });
 
   res.status(200).json({
