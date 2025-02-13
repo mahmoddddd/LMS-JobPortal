@@ -29,6 +29,7 @@ const vidioCatRoutes = require("./routes/vidioCatRoutes");
 const courseCatRoutes = require("./routes/courseCatRoutes");
 const courseRoutes = require("./routes/courseRoutes");
 const lessonRoutes = require("./routes/lessonRoutes.js");
+const workRoutes = require("./routes/workRoutes.js");
 const { default: rateLimit } = require("express-rate-limit");
 
 const app = express();
@@ -58,7 +59,7 @@ app.get("/", (req, res) => {
   res.send(`<a href="http://localhost:4000/google">Login with Google</a>`);
 });
 app.set("trust proxy", 1);
-
+app.use("/api/work", workRoutes);
 app.use("/api/ai", aiRoutes);
 app.use("/api/course", courseRoutes);
 app.use("/api/course/category", courseCatRoutes);
