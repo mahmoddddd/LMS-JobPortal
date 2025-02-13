@@ -14,6 +14,21 @@ const createOne = (Model) => {
     }
   });
 };
+const updateOne = (Model) => {
+  return asyncHandler(async (req, res) => {
+    try {
+      const data = await Model.findByIdAndUpdate(id, req.body, { new: true });
+      res.status(200).json({
+        status: true,
+        message: "updated Susess",
+        data,
+      });
+    } catch (error) {
+      throw new Error(error);
+    }
+  });
+};
 module.exports = {
   createOne,
+  updateOne,
 };
