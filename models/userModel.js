@@ -38,7 +38,12 @@ let userSchema = new mongoose.Schema(
       type: String,
       default: "user",
     },
-
+    enrolledCourses: [
+      {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: "Course",
+      },
+    ],
     profession: {
       type: String,
       // default: "student",
