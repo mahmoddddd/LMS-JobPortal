@@ -1,13 +1,21 @@
 const Work = require("../models/workWithUsModel");
-
-const asyncHandler = require("express-async-handler");
-const validateMongoDbId = require("../config/validateMongoDb");
-const { createOne, updateOne } = require("./customCtrl");
+const {
+  createOne,
+  updateOne,
+  deleteOne,
+  getOne,
+  getAll,
+} = require("./customCtrl");
 
 const postDetails = createOne(Work);
 const updateDetails = updateOne(Work);
-
+const deletedDetails = deleteOne(Work);
+const getOneDetail = getOne(Work);
+const getAllDetails = getAll(Work);
 module.exports = {
   postDetails,
   updateDetails,
+  deletedDetails,
+  getOneDetail,
+  getAllDetails,
 };
