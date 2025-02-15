@@ -15,7 +15,7 @@ const createOne = (Model) =>
         message: "Name is required to generate a slug",
       });
     }
-
+    req.body.userId = req.user._id;
     // Create the document
     const data = await Model.create(req.body);
 

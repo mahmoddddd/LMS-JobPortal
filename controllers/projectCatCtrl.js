@@ -8,7 +8,6 @@ const APIFeatures = require("../utils/apiFeatures");
 const postProjectCat = asyncHandler(async (req, res) => {
   const { title } = req.body;
 
-  // Check if title is provided
   if (!title) {
     return res.status(400).json({
       status: false,
@@ -16,7 +15,6 @@ const postProjectCat = asyncHandler(async (req, res) => {
     });
   }
 
-  // Generate a slug from the title
   let slug = slugify(title.toLowerCase());
 
   // Ensure the slug is unique
@@ -25,9 +23,8 @@ const postProjectCat = asyncHandler(async (req, res) => {
     slug = `${slugify(title.toLowerCase())}-${count}`;
     count++;
   }
-
-  // Create the project category
-  const projectCat = await ProjectCategory.create({ title, slug });
+  const { id } = req.user;
+  const projectCat = await ProjectCategory.create({ title, slug, userId: id });
 
   // Send success response
   res.status(201).json({
@@ -42,43 +39,31 @@ const updateProjectCat = asyncHandler(async (req, res) => {
   const { id } = req.params;
   const { title } = req.body;
 
-  // Validate MongoDB ID
   validateMongoDbId(id);
-
-  // Check if title is provided
   if (!title) {
     return res.status(400).json({
       status: false,
       message: "Title is required to update a project category",
     });
   }
-
-  // Generate a new slug from the updated title
   let slug = slugify(title.toLowerCase());
-
-  // Ensure the new slug is unique
   let count = 1;
   while (await ProjectCategory.exists({ slug, _id: { $ne: id } })) {
     slug = `${slugify(title.toLowerCase())}-${count}`;
     count++;
   }
-
-  // Update the project category
   const updatedProjectCat = await ProjectCategory.findByIdAndUpdate(
     id,
     { title, slug },
     { new: true, runValidators: true }
   );
 
-  // Check if the document exists
   if (!updatedProjectCat) {
     return res.status(404).json({
       status: false,
       message: "Project category not found",
     });
   }
-
-  // Send success response
   res.status(200).json({
     status: true,
     message: "Project category updated successfully",

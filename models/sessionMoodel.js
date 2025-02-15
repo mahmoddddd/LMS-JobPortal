@@ -1,17 +1,8 @@
 const mongoose = require("mongoose");
 
-let workSchema = new mongoose.Schema(
+const bookSessionSchema = new mongoose.Schema(
   {
     name: {
-      type: String,
-      required: true,
-    },
-    userId: {
-      type: mongoose.Schema.Types.ObjectId,
-      ref: "User",
-      required: true,
-    },
-    slug: {
       type: String,
       required: true,
     },
@@ -23,20 +14,25 @@ let workSchema = new mongoose.Schema(
       type: String,
       required: true,
     },
-    profession: {
+
+    subject: {
       type: String,
       required: true,
     },
-    currentJop: {
+    userId: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "User",
+      required: true,
+    },
+    desc: {
       type: String,
       required: true,
     },
-    resme: {
+    timeslot: {
       type: String,
       required: true,
     },
   },
   { timestamps: true }
 );
-
-module.exports = mongoose.model("Work", workSchema);
+module.exports = mongoose.model("BookSession", bookSessionSchema);

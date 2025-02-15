@@ -31,7 +31,7 @@ const chatController = async (req, res) => {
     });
 
     const data = await response.json();
-    console.log("AI API Response:", data);
+    //  console.log("AI API Response:", data);
 
     if (data.choices && data.choices.length > 0) {
       const aiResponse = data.choices[0].message.content;
@@ -107,7 +107,7 @@ const recommendCourses = async (req, res) => {
     });
 
     const data = await aiResponse.json();
-    console.log("AI Recommendation Response:", data);
+    //  console.log("AI Recommendation Response:", data);
 
     if (data.choices && data.choices.length > 0) {
       const recommendations = data.choices[0].message.content;
