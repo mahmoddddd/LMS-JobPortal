@@ -23,6 +23,33 @@ router.post("/register", registerAUser); // Register a new user
 router.post("/login", loginUser); // Login a user
 
 // Admin-protected routes
+/**
+ * @swagger
+ * /api/user:
+ *   get:
+ *     summary: Get all users
+ *     description: Returns a list of users
+ *     responses:
+ *       200:
+ *         description: A list of users.
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: array
+ *               items:
+ *                 type: object
+ *                 properties:
+ *                   id:
+ *                     type: string
+ *                     example: "123"
+ *                   name:
+ *                     type: string
+ *                     example: "Mahmoud"
+ */
+router.get("/", async (req, res) => {
+  res.json([{ id: "123", name: "Mahmoud" }]);
+});
+
 router.get("/getAll", isAuth, isAdmin, getAllUsers); // Get all users
 router.get("/getAUser/:id", isAuth, isAdmin, getAUser); // Get a specific user by ID
 router.delete("/deleteUser/:id", isAuth, isAdmin, deleteUser); // Delete a user

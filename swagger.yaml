@@ -1,0 +1,380 @@
+openapi: 3.0.0
+info:
+  title: LMSJobPORTAL API
+  description: API for managing users, tutorials, courses, and more.
+  version: 1.0.0
+servers:
+  - url: http://localhost:4000/api
+    description: Local development server
+  - url: http://localhost:4000/api
+    description: Base URL for the API
+paths:
+  /user/register:
+    post:
+      summary: Register a new user
+      description: Register a new user with email, password, and other details.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                email:
+                  type: string
+                  example: mahdaaaaaaaa9@gmail.com
+                firstname:
+                  type: string
+                  example: mhmod22
+                password:
+                  type: string
+                  example: lll25lll
+                profession:
+                  type: string
+                  example: mahmodToken
+                lastname:
+                  type: string
+                  example: elshedgrif
+                mobile:
+                  type: string
+                  example: "010222244455"
+                roles:
+                  type: string
+                  example: instructor
+      responses:
+        "200":
+          description: User registered successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: User registered successfully
+                  token:
+                    type: string
+                    example: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...
+
+  /user/login:
+    post:
+      summary: Login a user
+      description: Authenticate a user and return a JWT token.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                email:
+                  type: string
+                  example: mahmodd@gmail.com
+                password:
+                  type: string
+                  example: lll25lll
+      responses:
+        "200":
+          description: User logged in successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  token:
+                    type: string
+                    example: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...
+
+  /user/getAll:
+    get:
+      summary: Get all users
+      description: Retrieve a list of all users.
+      security:
+        - BearerAuth: []
+      responses:
+        "200":
+          description: List of users retrieved successfully
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  type: object
+                  properties:
+                    email:
+                      type: string
+                      example: mahdaaaaaaaa9@gmail.com
+                    firstname:
+                      type: string
+                      example: mhmod22
+                    lastname:
+                      type: string
+                      example: elshedgrif
+
+  /user/updateProfile:
+    put:
+      summary: Update user profile
+      description: Update the profile details of a user.
+      security:
+        - BearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                firstname:
+                  type: string
+                  example: Johnnn
+                lastname:
+                  type: string
+                  example: Doe
+                profession:
+                  type: string
+                  example: Software Engineer
+                mobile:
+                  type: string
+                  example: "12345678900"
+      responses:
+        "200":
+          description: User profile updated successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: User profile updated successfully
+
+  /user/deleteUser/{id}:
+    delete:
+      summary: Delete a user
+      description: Delete a user by their ID.
+      security:
+        - BearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+          example: 6791985528c4998cff44314c
+      responses:
+        "200":
+          description: User deleted successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: User deleted successfully
+
+  /user/getAUser/{id}:
+    get:
+      summary: Get a user by ID
+      description: Retrieve details of a specific user by their ID.
+      security:
+        - BearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+          example: 679185a7dd57adea04e2776d
+      responses:
+        "200":
+          description: User details retrieved successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  email:
+                    type: string
+                    example: mahdaaaaaaaa9@gmail.com
+                  firstname:
+                    type: string
+                    example: mhmod22
+                  lastname:
+                    type: string
+                    example: elshedgrif
+
+  /user/blockUser/{id}:
+    put:
+      summary: Block a user
+      description: Block a user by their ID.
+      security:
+        - BearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+          example: 679185a7dd57adea04e2776d
+      responses:
+        "200":
+          description: User blocked successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: User blocked successfully
+
+  /user/unblockUser/{id}:
+    put:
+      summary: Unblock a user
+      description: Unblock a user by their ID.
+      security:
+        - BearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+          example: 679185a7dd57adea04e2776d
+      responses:
+        "200":
+          description: User unblocked successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: User unblocked successfully
+
+  /user/update-password:
+    put:
+      summary: Update user password
+      description: Update the password of a user.
+      security:
+        - BearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                password:
+                  type: string
+                  example: newpassword123
+      responses:
+        "200":
+          description: Password updated successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: Password updated successfully
+
+  /user/forgetPasswordToken:
+    post:
+      summary: Request password reset token
+      description: Send a password reset token to the user's email.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                email:
+                  type: string
+                  example: mahmodd.elsheriff@gmail.com
+      responses:
+        "200":
+          description: Password reset token sent successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: Password reset token sent successfully
+
+  /user/reset-password/{token}:
+    put:
+      summary: Reset user password
+      description: Reset the user's password using the reset token.
+      parameters:
+        - name: token
+          in: path
+          required: true
+          schema:
+            type: string
+          example: 8cd116c0c57547762a98c296fa1959c68e00952f44aaf4253993c27f3886f1b9
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                password:
+                  type: string
+                  example: newpassword123
+      responses:
+        "200":
+          description: Password reset successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: Password reset successfully
+
+  /user/set-password-mobile:
+    put:
+      summary: Set password and mobile for Google users
+      description: Set password and mobile for users who signed up with Google.
+      security:
+        - BearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                password:
+                  type: string
+                  example: newpassword123
+                mobile:
+                  type: string
+                  example: "010020555555555"
+      responses:
+        "200":
+          description: Password and mobile updated successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: Password and mobile updated successfully
+
+# Add more endpoints here...
+
+securitySchemes:
+  BearerAuth:
+    type: http
+    scheme: bearer

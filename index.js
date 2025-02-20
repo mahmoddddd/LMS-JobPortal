@@ -2,6 +2,10 @@ const express = require("express");
 const dotenv = require("dotenv");
 const dbConnect = require("./config/dbConnect");
 const bodyParser = require("body-parser");
+const fs = require("fs");
+const path = require("path");
+const yaml = require("js-yaml");
+const swaggerUi = require("swagger-ui-express");
 
 const limiter = require("./utils/limitRequests");
 const { notfound, handerError } = require("./middlewares/errorHandler");
@@ -12,7 +16,6 @@ const passportSetup = require("./utils/passport");
 dotenv.config();
 const session = require("express-session");
 const googleRoutes = require("./routes/googleRotes.js");
-const path = require("path");
 
 const tutCategory = require("./routes/categoryRoutes.js");
 const tutRouter = require("./routes/tutorialRoutes.js");
@@ -32,7 +35,6 @@ const lessonRoutes = require("./routes/lessonRoutes.js");
 const workRoutes = require("./routes/workRoutes.js");
 const projectCatRoutes = require("./routes/projectCatRoutes.js");
 const projectRoutes = require("./routes/projectRoutes.js");
-const { default: rateLimit } = require("express-rate-limit");
 
 const app = express();
 dbConnect();
@@ -60,7 +62,9 @@ app.use("/api", limiter(15 * 60 * 1000, 50, "Too many requests from this IP"));
 app.get("/", (req, res) => {
   res.send(`<a href="http://localhost:4000/google">Login with Google</a>`);
 });
+
 app.set("trust proxy", 1);
+
 app.use("/api/projectCat", projectCatRoutes);
 app.use("/api/project", projectRoutes);
 app.use("/api/work", workRoutes);
@@ -82,9 +86,20 @@ app.use("/", googleRoutes);
 app.use("/api/category", tutCategory);
 app.use("/api/tutorial", tutRouter);
 
+const swaggerDocument = yaml.load(
+  fs.readFileSync(path.join(__dirname, "swagger.yaml"), "utf8")
+);
+
+function setupSwagger(app) {
+  app.use("/api-docs", swaggerUi.serve, swaggerUi.setup(swaggerDocument));
+  console.log("Swagger docs available at http://localhost:4000/api-docs");
+}
+
+setupSwagger(app);
+
 app.use(notfound);
 app.use(handerError);
 
-app.listen(PORT, () =>
-  console.log(`Server is Running on port http://localhost:${PORT}`)
-);
+app.listen(PORT, () => {
+  console.log(`Server is Running on port http://localhost:${PORT}`);
+});
