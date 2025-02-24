@@ -35,6 +35,7 @@ const lessonRoutes = require("./routes/lessonRoutes.js");
 const workRoutes = require("./routes/workRoutes.js");
 const projectCatRoutes = require("./routes/projectCatRoutes.js");
 const projectRoutes = require("./routes/projectRoutes.js");
+const bookSessionRoutes = require("./routes/bookSessionRoutes.js");
 
 const app = express();
 dbConnect();
@@ -65,6 +66,7 @@ app.get("/", (req, res) => {
 
 app.set("trust proxy", 1);
 
+app.use("/api/book-session", bookSessionRoutes);
 app.use("/api/projectCat", projectCatRoutes);
 app.use("/api/project", projectRoutes);
 app.use("/api/work", workRoutes);
