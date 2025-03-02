@@ -1,8 +1,8 @@
-const BookSession = require("../models/sessionMoodel");
+const BookSession = require("../models/sessionModel");
 const asyncHandler = require("express-async-handler");
 const validateMongoDbId = require("../config/validateMongoDb");
 const mongoose = require("mongoose");
-
+const APIFeatures = require("../utils/apiFeatures");
 // Create a new book session
 const createBookSession = asyncHandler(async (req, res) => {
   const { name, email, mobile, subject, desc, timeslot } = req.body;
@@ -24,13 +24,11 @@ const createBookSession = asyncHandler(async (req, res) => {
 
   await bookSession.save();
 
-  res
-    .status(201)
-    .json({
-      message: "Book session created successfully",
-      success: true,
-      data: bookSession,
-    });
+  res.status(201).json({
+    message: "Book session created successfully",
+    success: true,
+    data: bookSession,
+  });
 });
 
 // Get all book sessions with filtering, sorting, pagination, and field limiting

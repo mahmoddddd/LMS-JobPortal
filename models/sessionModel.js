@@ -32,6 +32,10 @@ const bookSessionSchema = new mongoose.Schema(
       type: String,
       required: true,
     },
+    status: {
+      type: String,
+      default: "Requested",
+    },
   },
   { timestamps: true }
 );
