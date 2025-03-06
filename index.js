@@ -37,6 +37,13 @@ const projectCatRoutes = require("./routes/projectCatRoutes.js");
 const projectRoutes = require("./routes/projectRoutes.js");
 const bookSessionRoutes = require("./routes/bookSessionRoutes.js");
 
+// Qna
+const qnaRoutes = require("./routes/qna/qnaRoutes");
+const answerRoutes = require("./routes/qna/answerRoutes");
+const commentRoutes = require("./routes/qna/commentRoutes");
+const questionRoutes = require("./routes/qna/questionRoutes");
+const tagRoutes = require("./routes/qna/tagRoutes");
+
 const app = express();
 dbConnect();
 
@@ -65,6 +72,13 @@ app.get("/", (req, res) => {
 });
 
 app.set("trust proxy", 1);
+
+// Use routes
+app.use("/api/qna", qnaRoutes);
+app.use("/api/answers", answerRoutes);
+app.use("/api/comments", commentRoutes);
+app.use("/api/questions", questionRoutes);
+app.use("/api/tags", tagRoutes);
 
 app.use("/api/book-session", bookSessionRoutes);
 app.use("/api/projectCat", projectCatRoutes);

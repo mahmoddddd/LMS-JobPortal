@@ -1,20 +1,22 @@
 const mongoose = require("mongoose");
 
-let questionSchema = new mongoose.Schema(
+const questionSchema = new mongoose.Schema(
   {
     title: {
       type: String,
       required: true,
-      index: true,
     },
     slug: {
       type: String,
       required: true,
-      unique: true,
-      index: true,
     },
-    description: {
+    content: {
       type: String,
+      required: true,
+    },
+    author: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "User",
       required: true,
     },
     tags: [
@@ -23,19 +25,13 @@ let questionSchema = new mongoose.Schema(
         ref: "Tag",
       },
     ],
-    author: {
-      type: mongoose.Schema.Types.ObjectId,
-      ref: "User",
-      required: true,
-    },
-    views: {
-      type: Number,
-      default: 0,
-    },
-    voteCount: {
-      type: Number,
-      default: 0,
-    },
+    answers: [
+      {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: "Answer",
+      },
+    ],
+
     comments: [
       {
         type: mongoose.Schema.Types.ObjectId,
@@ -44,32 +40,25 @@ let questionSchema = new mongoose.Schema(
     ],
     votesUp: [
       {
-        name: String,
-        createdAt: {
-          type: Date,
-          default: Date.now,
-        },
+        type: mongoose.Schema.Types.ObjectId,
+        ref: "User",
       },
     ],
     votesDown: [
       {
-        name: String,
-        createdAt: {
-          type: Date,
-          default: Date.now,
-        },
+        type: mongoose.Schema.Types.ObjectId,
+        ref: "User",
       },
     ],
     isAnswered: {
       type: Boolean,
       default: false,
     },
-    answers: [
-      {
-        type: mongoose.Schema.Types.ObjectId,
-        ref: "Answer",
-      },
-    ],
+    featuredAnswer: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "Answer",
+    },
+    views: { type: Number, default: 0 },
   },
   { timestamps: true }
 );

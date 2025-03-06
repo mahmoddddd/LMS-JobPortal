@@ -1,12 +1,8 @@
 const mongoose = require("mongoose");
-
-let commentSchema = new mongoose.Schema(
+const commentSchema = new mongoose.Schema(
   {
-    content: {
-      type: String,
-      required: true,
-    },
-    author: {
+    content: { type: String, required: true },
+    user: {
       type: mongoose.Schema.Types.ObjectId,
       ref: "User",
       required: true,
@@ -22,5 +18,20 @@ let commentSchema = new mongoose.Schema(
   },
   { timestamps: true }
 );
+
+// التحقق من أن التعليق مرتبط إما بسؤال أو بإجابة، وليس الاثنين معًا
+commentSchema.pre("validate", function (next) {
+  if (!this.question && !this.answer) {
+    return next(
+      new Error("A comment must be linked to either a question or an answer.")
+    );
+  }
+  if (this.question && this.answer) {
+    return next(
+      new Error("A comment cannot be linked to both a question and an answer.")
+    );
+  }
+  next();
+});
 
 module.exports = mongoose.model("Comment", commentSchema);

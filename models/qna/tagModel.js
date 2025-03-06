@@ -5,7 +5,7 @@ let tagSchema = new mongoose.Schema(
     name: {
       type: String,
       required: true,
-      unique: true, // كل وسم يجب أن يكون فريدًا
+      unique: true,
       trim: true,
     },
     description: {

@@ -1,6 +1,6 @@
 const mongoose = require("mongoose");
 
-let answerSchema = new mongoose.Schema(
+const answerSchema = new mongoose.Schema(
   {
     content: {
       type: String,
@@ -16,28 +16,25 @@ let answerSchema = new mongoose.Schema(
       ref: "Question",
       required: true,
     },
+    comments: [
+      {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: "Comment",
+      },
+    ],
     votesUp: [
       {
-        name: String,
-        createdAt: {
-          type: Date,
-          default: Date.now,
-        },
+        type: mongoose.Schema.Types.ObjectId,
+        ref: "User",
       },
     ],
     votesDown: [
       {
-        name: String,
-        createdAt: {
-          type: Date,
-          default: Date.now,
-        },
+        type: mongoose.Schema.Types.ObjectId,
+        ref: "User",
       },
     ],
-    isBestAnswer: {
-      type: Boolean,
-      default: false,
-    },
+    isBestAnswer: { type: Boolean, default: false },
   },
   { timestamps: true }
 );
