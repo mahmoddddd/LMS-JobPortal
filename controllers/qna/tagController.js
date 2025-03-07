@@ -1,7 +1,6 @@
 const asyncHandler = require("express-async-handler");
 const validateMongoDbId = require("../../config/validateMongoDb");
 const Tag = require("../../models/qna/tagModel");
-const ApiFeatures = require("../../utils/apiFeatures");
 
 // Create a new tag
 const createTag = asyncHandler(async (req, res) => {
@@ -11,15 +10,9 @@ const createTag = asyncHandler(async (req, res) => {
   res.status(201).json(tag);
 });
 
-// Get all tags with sorting, filtering, and pagination
+// Get all tags
 const getAllTags = asyncHandler(async (req, res) => {
-  const features = new ApiFeatures(Tag.find(), req.query)
-    .filter()
-    .sort()
-    .limitFields()
-    .paginate();
-
-  const tags = await features.query;
+  const tags = await Tag.find();
   res.json(tags);
 });
 
@@ -51,6 +44,7 @@ const updateTag = asyncHandler(async (req, res) => {
     throw new Error("Tag not found");
   }
 
+  // Check if user is an admin
   if (!user.roles.includes("admin")) {
     res.status(403);
     throw new Error("You are not authorized to update this tag");
@@ -78,6 +72,7 @@ const deleteTag = asyncHandler(async (req, res) => {
     throw new Error("Tag not found");
   }
 
+  // Check if user is an admin
   if (!user.roles.includes("admin")) {
     res.status(403);
     throw new Error("You are not authorized to delete this tag");

@@ -1,7 +1,11 @@
 const mongoose = require("mongoose");
+
 const commentSchema = new mongoose.Schema(
   {
-    content: { type: String, required: true },
+    content: {
+      type: String,
+      required: true,
+    },
     user: {
       type: mongoose.Schema.Types.ObjectId,
       ref: "User",
@@ -19,7 +23,6 @@ const commentSchema = new mongoose.Schema(
   { timestamps: true }
 );
 
-// التحقق من أن التعليق مرتبط إما بسؤال أو بإجابة، وليس الاثنين معًا
 commentSchema.pre("validate", function (next) {
   if (!this.question && !this.answer) {
     return next(

@@ -2,10 +2,7 @@ const mongoose = require("mongoose");
 
 const answerSchema = new mongoose.Schema(
   {
-    content: {
-      type: String,
-      required: true,
-    },
+    content: { type: String, required: true },
     author: {
       type: mongoose.Schema.Types.ObjectId,
       ref: "User",
@@ -34,7 +31,10 @@ const answerSchema = new mongoose.Schema(
         ref: "User",
       },
     ],
-    isBestAnswer: { type: Boolean, default: false },
+    isBestAnswer: {
+      type: Boolean,
+      default: false,
+    },
   },
   { timestamps: true }
 );

@@ -9,18 +9,26 @@ const createAnswer = asyncHandler(async (req, res) => {
   const { content, question } = req.body;
   const author = req.user._id;
 
-  validateMongoDbId(author);
-  validateMongoDbId(question);
-  const ifQuestion = await Question.findById(question);
-  if (!ifQuestion) {
+  [author, question].forEach(validateMongoDbId);
+
+  const existingQuestion = await Question.findById(question);
+  if (!existingQuestion) {
     res.status(404);
     throw new Error("Question not found");
   }
+
   const answer = await Answer.create({ content, author, question });
+
+  // Update question's answers array
+  await Question.findByIdAndUpdate(question, {
+    $push: { answers: answer._id },
+    $inc: { answerCount: 1 },
+  });
+
   res.status(201).json(answer);
 });
 
-// Get all answers with sorting, filtering, and pagination
+// Get all answers
 const getAllAnswers = asyncHandler(async (req, res) => {
   const features = new ApiFeatures(Answer.find(), req.query)
     .filter()
@@ -29,7 +37,7 @@ const getAllAnswers = asyncHandler(async (req, res) => {
     .paginate();
 
   const answers = await features.query
-    .populate("author", "name email")
+    .populate("author", "firstname email")
     .populate("question", "title content");
 
   res.json(answers);
@@ -41,7 +49,7 @@ const getAnswerById = asyncHandler(async (req, res) => {
   validateMongoDbId(id);
 
   const answer = await Answer.findById(id)
-    .populate("author", "name email")
+    .populate("author", "firstname email")
     .populate("question", "title content");
 
   if (!answer) {
@@ -66,7 +74,11 @@ const updateAnswer = asyncHandler(async (req, res) => {
     throw new Error("Answer not found");
   }
 
-  if (answer.author.toString() !== user._id.toString() && !user.isAdmin) {
+  // Check if user is the author or an admin
+  if (
+    answer.author.toString() !== user._id.toString() &&
+    !user.roles.includes("admin")
+  ) {
     res.status(403);
     throw new Error("You are not authorized to update this answer");
   }
@@ -93,12 +105,23 @@ const deleteAnswer = asyncHandler(async (req, res) => {
     throw new Error("Answer not found");
   }
 
-  if (answer.author.toString() !== user._id.toString() && !user.isAdmin) {
+  // Check if user is the author or an admin
+  if (
+    answer.author.toString() !== user._id.toString() &&
+    !user.roles.includes("admin")
+  ) {
     res.status(403);
     throw new Error("You are not authorized to delete this answer");
   }
 
   await Answer.findByIdAndDelete(id);
+
+  // Update question's answers array
+  await Question.findByIdAndUpdate(answer.question, {
+    $pull: { answers: answer._id },
+    $inc: { answerCount: -1 },
+  });
+
   res.json({ message: "Answer deleted successfully" });
 });
 

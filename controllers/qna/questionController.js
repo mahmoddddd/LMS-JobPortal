@@ -3,49 +3,46 @@ const validateMongoDbId = require("../../config/validateMongoDb");
 const Question = require("../../models/qna/questionModel");
 const Tag = require("../../models/qna/tagModel");
 const slugify = require("slugify");
+const ApiFeatures = require("../../utils/apiFeatures");
 
+// Create a new question
 const createQuestion = asyncHandler(async (req, res) => {
   const { title, content, tags = [] } = req.body;
   const author = req.user._id;
 
   validateMongoDbId(author);
-
   tags.forEach((tag) => validateMongoDbId(tag));
 
   const existingTags = await Tag.find({ _id: { $in: tags } });
-
-  const existingTagIds = existingTags.map((tag) => tag._id.toString());
-
-  const missingTags = tags.filter((tag) => !existingTagIds.includes(tag));
-
-  if (missingTags.length > 0) {
-    return res.status(400).json({
-      message: "Some tags do not exist in the database",
-      missingTags,
-    });
+  if (existingTags.length !== tags.length) {
+    res.status(400);
+    throw new Error("Some tags do not exist");
   }
 
   let slug = slugify(title, { lower: true, strict: true });
-
   let existingQuestion = await Question.findOne({ slug });
-  let counter = 1;
-  while (existingQuestion) {
-    slug = `${slug}-${counter}`;
-    existingQuestion = await Question.findOne({ slug });
-    counter++;
+  if (existingQuestion) {
+    slug = `${slug}-${Date.now()}`;
   }
+
   const question = await Question.create({
     title,
     content,
     author,
     slug,
-    tags: existingTagIds,
+    tags,
   });
+
+  // update tags added to question
+  await Tag.updateMany(
+    { _id: { $in: tags } },
+    { $push: { questions: question._id } }
+  );
 
   res.status(201).json(question);
 });
 
-// Get all questions with sorting, filtering, and pagination
+// Get all questions
 const getAllQuestions = asyncHandler(async (req, res) => {
   const features = new ApiFeatures(Question.find(), req.query)
     .filter()
@@ -54,11 +51,14 @@ const getAllQuestions = asyncHandler(async (req, res) => {
     .paginate();
 
   const questions = await features.query
-    .populate("author", "name email")
-    .populate("tags", "name")
-    .populate("answers");
+    .populate("author", "firstname email")
+    .populate("tags", "name");
 
-  res.json(questions);
+  res.json({
+    success: true,
+    count: questions.length,
+    data: questions,
+  });
 });
 
 // Get a single question by ID
@@ -67,11 +67,11 @@ const getQuestionById = asyncHandler(async (req, res) => {
   validateMongoDbId(id);
 
   const question = await Question.findById(id)
-    .populate("author", "name email")
+    .populate("author", "firstname email")
     .populate("tags", "name")
     .populate({
       path: "answers",
-      populate: { path: "author", select: "name email" },
+      populate: { path: "author", select: "firstname email" },
     });
 
   if (!question) {
@@ -97,23 +97,21 @@ const updateQuestion = asyncHandler(async (req, res) => {
     throw new Error("Question not found");
   }
 
-  if (question.author.toString() !== user._id.toString() && !user.isAdmin) {
+  // Check if user is the author or an admin
+  if (
+    question.author.toString() !== user._id.toString() &&
+    !user.roles.includes("admin")
+  ) {
     res.status(403);
     throw new Error("You are not authorized to update this question");
   }
 
-  // تحديث `slug` فقط إذا كان هناك تغيير في العنوان
   let slug = question.slug;
   if (title && title !== question.title) {
     slug = slugify(title, { lower: true, strict: true });
-
-    // التأكد من أن الـ `slug` الجديد فريد
-    let existingQuestion = await Question.findOne({ slug, _id: { $ne: id } });
-    let counter = 1;
-    while (existingQuestion) {
-      slug = `${slug}-${counter}`;
-      existingQuestion = await Question.findOne({ slug, _id: { $ne: id } });
-      counter++;
+    const existingQuestion = await Question.findOne({ slug, _id: { $ne: id } });
+    if (existingQuestion) {
+      slug = `${slug}-${Date.now()}`;
     }
   }
 
@@ -139,7 +137,11 @@ const deleteQuestion = asyncHandler(async (req, res) => {
     throw new Error("Question not found");
   }
 
-  if (question.author.toString() !== user._id.toString() && !user.isAdmin) {
+  // Check if user is the author or an admin
+  if (
+    question.author.toString() !== user._id.toString() &&
+    !user.roles.includes("admin")
+  ) {
     res.status(403);
     throw new Error("You are not authorized to delete this question");
   }

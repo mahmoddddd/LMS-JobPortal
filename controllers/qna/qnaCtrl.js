@@ -1,58 +1,46 @@
 const asyncHandler = require("express-async-handler");
 const validateMongoDbId = require("../../config/validateMongoDb");
 const QnA = require("../../models/qna/qnaModel");
-const Answer = require("../../models/qna/answerModel");
 const Question = require("../../models/qna/questionModel");
-const ApiFeatures = require("../../utils/apiFeatures");
+const Answer = require("../../models/qna/answerModel");
 
 // Create a new QnA entry
 const createQna = asyncHandler(async (req, res) => {
   const { question, answer, featured } = req.body;
   const user = req.user._id;
 
-  // validateMongoDbId(user);
-  // validateMongoDbId(question);
-  // if (answer) validateMongoDbId(answer);
   [user, question, answer].forEach((id) => id && validateMongoDbId(id));
 
-  const ifQuestion = await Question.findById(question);
-  if (!ifQuestion) {
+  const existingQuestion = await Question.findById(question);
+  if (!existingQuestion) {
     res.status(404);
     throw new Error("Question not found");
   }
-  const ifAnswer = await Answer.findById(answer);
-  if (!ifAnswer) {
+
+  const existingAnswer = await Answer.findById(answer);
+  if (!existingAnswer) {
     res.status(404);
     throw new Error("Answer not found");
   }
-  // if user enter same answer to the same question twice
+
   const existingQna = await QnA.findOne({ user, question, answer });
   if (existingQna) {
-    return res
-      .status(400)
-      .json({ message: "You have already added this answer to the question." });
+    res.status(400);
+    throw new Error("You have already added this answer to the question");
   }
+
   const qna = await QnA.create({ user, question, answer, featured });
   res.status(201).json(qna);
 });
 
-// Get all QnA entries with sorting, filtering, and pagination
+// Get all QnA entries
 const getAllQnas = asyncHandler(async (req, res) => {
-  const features = new ApiFeatures(QnA.find(), req.query)
-    .filter()
-    .sort()
-    .limitFields()
-    .paginate();
-
-  const qnas = await features.query
+  const qnas = await QnA.find()
     .populate("user", "firstname email")
     .populate("question", "title content")
     .populate("answer", "content");
 
-  res.json({
-    qnas,
-    numOfQnas: qnas.length,
-  });
+  res.json(qnas);
 });
 
 // Get a single QnA entry by ID
@@ -61,7 +49,7 @@ const getQnaById = asyncHandler(async (req, res) => {
   validateMongoDbId(id);
 
   const qna = await QnA.findById(id)
-    .populate("user", "name email")
+    .populate("user", "firstname email")
     .populate("question", "title content")
     .populate("answer", "content");
 
@@ -87,7 +75,11 @@ const updateQna = asyncHandler(async (req, res) => {
     throw new Error("QnA entry not found");
   }
 
-  if (qna.user.toString() !== user._id.toString() && user.roles !== "admin") {
+  // Check if user is the author or an admin
+  if (
+    qna.user.toString() !== user._id.toString() &&
+    !user.roles.includes("admin")
+  ) {
     res.status(403);
     throw new Error("You are not authorized to update this QnA entry");
   }
@@ -114,7 +106,11 @@ const deleteQna = asyncHandler(async (req, res) => {
     throw new Error("QnA entry not found");
   }
 
-  if (qna.user !== user._id && user.roles !== "admin") {
+  // Check if user is the author or an admin
+  if (
+    qna.user.toString() !== user._id.toString() &&
+    !user.roles.includes("admin")
+  ) {
     res.status(403);
     throw new Error("You are not authorized to delete this QnA entry");
   }

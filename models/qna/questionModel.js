@@ -9,6 +9,7 @@ const questionSchema = new mongoose.Schema(
     slug: {
       type: String,
       required: true,
+      unique: true,
     },
     content: {
       type: String,
@@ -31,7 +32,6 @@ const questionSchema = new mongoose.Schema(
         ref: "Answer",
       },
     ],
-
     comments: [
       {
         type: mongoose.Schema.Types.ObjectId,
@@ -58,7 +58,10 @@ const questionSchema = new mongoose.Schema(
       type: mongoose.Schema.Types.ObjectId,
       ref: "Answer",
     },
-    views: { type: Number, default: 0 },
+    views: {
+      type: Number,
+      default: 0,
+    },
   },
   { timestamps: true }
 );
