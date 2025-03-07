@@ -11,10 +11,10 @@ The **LMS Job Portal** is a Learning Management System (LMS) integrated with job
 
 - **User Authentication**: Secure login and registration using JWT authentication.
 - **Role-Based Access Control**:
+
   - Admin: Manage users, courses, and job listings.
   - Instructor: Create and manage courses.
   - Student: Enroll in courses and apply for jobs.
-
 
 - **Course Management**: CRUD operations for courses, quizzes, and assignments (similar to Udemy).
 - **Q&A Forum**: Users can ask and answer questions (similar to Stack Overflow).
@@ -79,10 +79,70 @@ The **LMS Job Portal** is a Learning Management System (LMS) integrated with job
 
 - The API is documented using **Postman** or **Swagger**.
 - Base URL: `http://localhost:4000/api`
+- Postman Collection (Coming Soon): [Postman Link](#)
+
+- The API is documented using **Postman** or **Swagger**.
+- Base URL: `http://localhost:4000/api`
+
+### Example API Requests
+
+#### User Login
+
+```sh
+POST /api/auth/login
+Headers: { "Content-Type": "application/json" }
+Body: {
+  "email": "user@example.com",
+  "password": "password123"
+}
+```
+
+Response:
+
+```json
+{
+  "token": "your_jwt_token",
+  "user": {
+    "id": "123456789",
+    "name": "John Doe",
+    "role": "student"
+  }
+}
+```
+
+#### Create a New Course (Instructor Only)
+
+```sh
+POST /api/courses
+Headers: { "Authorization": "Bearer your_jwt_token", "Content-Type": "application/json" }
+Body: {
+  "title": "Advanced Node.js",
+  "description": "Learn advanced concepts of Node.js",
+  "price": 49.99,
+  "videoUrl": "https://res.cloudinary.com/demo/video/upload/sample.mp4"
+}
+```
+
+Response:
+
+```json
+{
+  "message": "Course created successfully",
+  "course": {
+    "id": "987654321",
+    "title": "Advanced Node.js",
+    "instructor": "123456789"
+  }
+}
+```
+
+- The API is documented using **Postman** or **Swagger**.
+- Base URL: `http://localhost:4000/api`
 
 ## Contact
 
 For any inquiries or contributions, feel free to reach out:
+
 - **Email**: mahmodd.elsheriff@gmail.com
 - **Phone**: 01002084496
 
@@ -98,4 +158,3 @@ Contributions are welcome! Follow these steps:
 ## License
 
 This project is licensed under the MIT License.
-
