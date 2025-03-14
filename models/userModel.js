@@ -55,16 +55,21 @@ let userSchema = new mongoose.Schema(
       type: Boolean,
       default: false,
     },
-    cart: {
-      type: Array,
-      default: [],
-    },
+    cart: [
+      {
+        course: { type: mongoose.Schema.Types.ObjectId, ref: "Course" },
+        addedAt: { type: Date, default: Date.now },
+      },
+    ],
+
     passwordChangedAt: Date,
     passwordResetToken: String,
     passwordResetExpires: Date,
+
     stripe_account_id: String,
     stripe_seller: {},
     stripe_Session: {},
+
     googleId: {
       type: String,
       unique: true,

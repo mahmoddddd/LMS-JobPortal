@@ -31,7 +31,7 @@ let workSchema = new mongoose.Schema(
       type: String,
       required: true,
     },
-    resme: {
+    resume: {
       type: String,
       required: true,
     },

@@ -1,7 +1,7 @@
 const asyncHandler = require("express-async-handler");
 const validateMongoDbId = require("../../config/validateMongoDb");
 const Tag = require("../../models/qna/tagModel");
-
+const Question = require("../../models/qna/questionModel");
 // Create a new tag
 const createTag = asyncHandler(async (req, res) => {
   const { name, description } = req.body;
@@ -77,8 +77,10 @@ const deleteTag = asyncHandler(async (req, res) => {
     res.status(403);
     throw new Error("You are not authorized to delete this tag");
   }
+  await Question.updateMany({ tags: id }, { $pull: { tags: id } });
 
   await Tag.findByIdAndDelete(id);
+
   res.json({ message: "Tag deleted successfully" });
 });
 
