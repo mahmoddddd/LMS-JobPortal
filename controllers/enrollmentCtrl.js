@@ -6,11 +6,6 @@ const User = require("../models/userModel");
 
 const stripe = require("stripe")(process.env.STRIPE_SECRET_KEY); // Payment gateway
 
-/**
- * @desc    Enroll user in a course
- * @route   POST /api/enrollment
- * @access  Private (Requires Authentication)
- */
 const enrollInCourse = asyncHandler(async (req, res) => {
   const { courseId } = req.body;
   const userId = req.user._id;
@@ -45,7 +40,7 @@ const enrollInCourse = asyncHandler(async (req, res) => {
       .json({ message: "You have been enrolled successfully", enrollment });
   }
 
-  // ✅ If the course is PAID, create a Stripe Checkout Session
+  //  If the course is PAID, create a Stripe Checkout Session
   const session = await stripe.checkout.sessions.create({
     payment_method_types: ["card"], // Accepts card payments
     mode: "payment",
@@ -62,63 +57,46 @@ const enrollInCourse = asyncHandler(async (req, res) => {
     ],
     success_url: `${process.env.CLIENT_URL}/payment-success?session_id={CHECKOUT_SESSION_ID}`, // Redirect on success
     cancel_url: `${process.env.CLIENT_URL}/payment-failed`, // Redirect on failure
-    metadata: { userId, courseId }, // Store metadata to process after payment
+
+    metadata: { userId: userId.toString(), courseId: courseId.toString() },
   });
 
   res.json({ url: session.url });
 });
 
-/**
- * @desc    Stripe Webhook to confirm payment and enroll user
- * @route   POST /api/enrollment/webhook
- * @access  Public (Called by Stripe)
- */
 const paymentWebhook = async (req, res) => {
-  const sig = req.headers["stripe-signature"];
+  console.log("🔔 Webhook received!", req.body);
 
+  const sig = req.headers["stripe-signature"];
   let event;
+
   try {
-    // Verify the webhook signature from Stripe
     event = stripe.webhooks.constructEvent(
       req.body,
       sig,
       process.env.STRIPE_WEBHOOK_SECRET
     );
   } catch (err) {
+    console.error("❌ Webhook Error:", err.message);
     return res.status(400).send(`Webhook Error: ${err.message}`);
   }
 
-  // ✅ If payment is successful
+  console.log("✅ Event type:", event.type);
+
   if (event.type === "checkout.session.completed") {
+    console.log("🎉 Payment successful, enrolling user...");
     const session = event.data.object;
-    const userId = session.metadata.userId;
-    const courseId = session.metadata.courseId;
-
-    // ✅ Enroll the user in the course
-    await Enrollment.create({
-      user: userId,
-      course: courseId,
-      paymentStatus: "paid",
-    });
-
-    console.log(`✅ User ${userId} enrolled in Course ${courseId}`);
+    console.log("Session Data:", session);
   }
 
   res.json({ received: true });
 };
 
-module.exports = { paymentWebhook };
-
-/**
- * @desc    Check if a user is enrolled in a course
- * @route   GET /api/enrollment/:courseId
- * @access  Private (Requires Authentication)
- */
 const checkEnrollment = asyncHandler(async (req, res) => {
   const { courseId } = req.params;
   const userId = req.user._id;
 
-  // ✅ Check if the user is enrolled
+  //  Check if the user is enrolled
   const enrollment = await Enrollment.findOne({
     user: userId,
     course: courseId,
@@ -132,4 +110,4 @@ const checkEnrollment = asyncHandler(async (req, res) => {
   res.json({ message: "Access granted" });
 });
 
-module.exports = { enrollInCourse, checkEnrollment };
+module.exports = { enrollInCourse, paymentWebhook, checkEnrollment };

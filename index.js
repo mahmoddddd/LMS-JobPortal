@@ -36,7 +36,7 @@ const workRoutes = require("./routes/workRoutes.js");
 const projectCatRoutes = require("./routes/projectCatRoutes.js");
 const projectRoutes = require("./routes/projectRoutes.js");
 const bookSessionRoutes = require("./routes/bookSessionRoutes.js");
-
+const enrollmentRoutes = require("./routes/enrollmentRoutes");
 // Qna
 const qnaRoutes = require("./routes/qna/qnaRoutes");
 const answerRoutes = require("./routes/qna/answerRoutes");
@@ -79,6 +79,7 @@ app.use("/api/answers", answerRoutes);
 app.use("/api/comments", commentRoutes);
 app.use("/api/questions", questionRoutes);
 app.use("/api/tags", tagRoutes);
+app.use("/api/enroll", enrollmentRoutes);
 
 app.use("/api/book-session", bookSessionRoutes);
 app.use("/api/projectCat", projectCatRoutes);
@@ -110,6 +111,11 @@ function setupSwagger(app) {
   app.use("/api-docs", swaggerUi.serve, swaggerUi.setup(swaggerDocument));
   console.log("Swagger docs available at http://localhost:4000/api-docs");
 }
+
+app.post("/webhook", (req, res) => {
+  console.log("Webhook received:", req.body);
+  res.status(200).send("Received!");
+});
 
 setupSwagger(app);
 
