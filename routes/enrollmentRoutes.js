@@ -3,22 +3,26 @@ const {
   enrollInCourse,
   paymentWebhook,
   checkEnrollment,
+  paymentSuccessHandler,
 } = require("../controllers/enrollmentCtrl");
-const { isAuth, isAdmin } = require("../middlewares/authMiddleware");
+const { isAuth } = require("../middlewares/authMiddleware");
 
 const router = express.Router();
 
-//  Route to enroll in a course
+// Enroll in course
 router.post("/enroll", isAuth, enrollInCourse);
 
-//  Stripe Webhook (Public - Stripe will call this)
+// Stripe Webhook
 router.post(
   "/webhook",
   express.raw({ type: "application/json" }),
   paymentWebhook
 );
 
-// Check if a user is enrolled
+// Check if user is enrolled
 router.get("/check/:courseId", isAuth, checkEnrollment);
+
+// Handle payment success
+router.get("/payment-success", paymentSuccessHandler);
 
 module.exports = router;

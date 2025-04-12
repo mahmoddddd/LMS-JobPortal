@@ -23,7 +23,7 @@ const courseSchema = new mongoose.Schema(
         ref: "Lesson",
       },
     ],
-    paid: {
+    isFree: {
       type: Boolean,
       default: false,
     },

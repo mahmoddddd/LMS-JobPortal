@@ -44,8 +44,13 @@ const chatController = async (req, res) => {
           "You've reached the free-tier limit. Try again later or upgrade your plan.",
       });
     } else {
-      console.error("Invalid AI response:", data);
-      return res.status(500).json({ error: "Invalid AI response." });
+      console.error("Invalid AI response: ", data);
+      return res
+        .status(500)
+        .json({
+          error:
+            "Invalid AI response. You've reached the free-tier limit. Try again later or upgrade your plan.",
+        });
     }
   } catch (error) {
     console.error("Error in chatController:", error);
