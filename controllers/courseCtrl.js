@@ -90,6 +90,25 @@ const getAllCourses = asyncHandler(async (req, res) => {
   });
 });
 
+// Get User Courses
+const getUserCourses = asyncHandler(async (req, res) => {
+  const userId = req.user._id;
+  validateMongoDbId(userId);
+
+  const courses = await Course.find({
+    deletedAt: null,
+    students: userId,
+  });
+
+  res.status(200).json({
+    status: true,
+    message: "User courses fetched successfully.",
+    data: {
+      courses,
+    },
+  });
+});
+
 // GET - Get a Single Course by Slug
 const getCourseBySlug = asyncHandler(async (req, res) => {
   const { slug } = req.params;
@@ -276,6 +295,7 @@ module.exports = {
   createCourse,
   getAllCourses,
   getCourseBySlug,
+  getUserCourses,
   updateCourse,
   deleteCourse,
   courseByCategory,

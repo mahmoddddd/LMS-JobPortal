@@ -16,6 +16,7 @@ const {
   courseByCategory,
   particularInstructorCourse,
   getInstructorCourses,
+  getUserCourses,
 } = require("../controllers/courseCtrl");
 
 const upload = require("../middlewares/upload");
@@ -40,8 +41,11 @@ router.get("/by-cat/:slug", courseByCategory);
 //  Get courses by instructor ID (Public access)
 router.get("/instructor/:id", particularInstructorCourse);
 
-// Get My Courses (Public access)
+// Get My Courses As Instructor (Public access)
 router.get("/my-courses", isAuth, isBoth, getInstructorCourses);
+
+// Get My Courses As User (Public access)
+router.get("/student-courses", isAuth, isBoth, getUserCourses);
 
 //  Get a single course by slug (Public access)
 router.get("/:slug", getCourseBySlug);
