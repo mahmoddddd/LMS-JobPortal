@@ -29,7 +29,7 @@ const sendWhatsAppMessage = async (user, email) => {
       console.log("Response Body:", body.toString()); // log the response body
       if (res.statusCode !== 200) {
         console.error(
-          "Failed to send WhatsApp message. Response:",
+          "Failed to send WhatsApp message. Response: this feature is not available for a free account",
           body.toString()
         );
       } else {

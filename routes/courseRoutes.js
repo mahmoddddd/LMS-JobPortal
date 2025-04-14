@@ -18,9 +18,19 @@ const {
   getInstructorCourses,
 } = require("../controllers/courseCtrl");
 
-//  Create a course (Requires authentication + must be Instructor or Admin)
-router.post("/", isAuth, isBoth, createCourse);
+const upload = require("../middlewares/upload");
 
+//  Create a course (Requires authentication + must be Instructor or Admin)
+router.post(
+  "/",
+  isAuth,
+  isBoth,
+  upload.fields([
+    { name: "image", maxCount: 1 },
+    { name: "video", maxCount: 1 },
+  ]),
+  createCourse
+);
 //  Get all courses (Public access)
 router.get("/", isAuth, restrictTo("admin", "instructor"), getAllCourses);
 

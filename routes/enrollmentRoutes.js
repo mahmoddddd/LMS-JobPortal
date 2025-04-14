@@ -4,6 +4,7 @@ const {
   paymentWebhook,
   checkEnrollment,
   paymentSuccessHandler,
+  // paymentCanceledHandler,
 } = require("../controllers/enrollmentCtrl");
 const { isAuth } = require("../middlewares/authMiddleware");
 
@@ -24,5 +25,6 @@ router.get("/check/:courseId", isAuth, checkEnrollment);
 
 // Handle payment success
 router.get("/payment-success", paymentSuccessHandler);
-
+// Handle payment canceled
+// router.get("/payment-canceled", paymentCanceledHandler);
 module.exports = router;

@@ -44,6 +44,9 @@ const commentRoutes = require("./routes/qna/commentRoutes");
 const questionRoutes = require("./routes/qna/questionRoutes");
 const tagRoutes = require("./routes/qna/tagRoutes");
 
+// Upload Files
+const uploadRoutes = require("./routes/uploadRoutes");
+
 const app = express();
 dbConnect();
 
@@ -61,6 +64,9 @@ app.use(passport.initialize());
 app.use(passport.session());
 
 const PORT = process.env.PORT || 5000;
+
+const cookieParser = require("cookie-parser");
+app.use(cookieParser());
 
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: false }));
@@ -80,6 +86,9 @@ app.use("/api/comments", commentRoutes);
 app.use("/api/questions", questionRoutes);
 app.use("/api/tags", tagRoutes);
 app.use("/api/enroll", enrollmentRoutes);
+
+// Upload Files
+app.use("/api/upload", uploadRoutes);
 
 app.use("/api/book-session", bookSessionRoutes);
 app.use("/api/projectCat", projectCatRoutes);

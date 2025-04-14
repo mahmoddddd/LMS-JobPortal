@@ -16,6 +16,8 @@ const {
   forgetPasswoordToken,
   resetPassword,
   setPasswordAndMobile,
+  refreshAccessToken,
+  logoutUser,
 } = require("../controllers/userCtr");
 
 // Public routes
@@ -25,6 +27,9 @@ router.post("/login", loginUser); // Login a user
 router.get("/", async (req, res) => {
   res.json([{ id: "123", name: "Mahmoud" }]);
 });
+
+router.post("/refresh-token", isAuth, refreshAccessToken); // Refresh access token
+router.post("/logout", isAuth, logoutUser); // Logout a user
 
 router.get("/getAll", isAuth, isAdmin, getAllUsers); // Get all users
 router.get("/getAUser/:id", isAuth, isAdmin, getAUser); // Get a specific user by ID

@@ -1,51 +1,63 @@
 const jwt = require("jsonwebtoken");
 const asyncHandler = require("express-async-handler");
 const User = require("../models/userModel");
+const TokenBlacklist = require("../models/tokenBlackListModel");
+
+// Base Authentication Middleware
 const isAuth = asyncHandler(async (req, res, next) => {
   let token;
 
-  // Check if the token is in the headers
-  if (
-    req.headers.authorization &&
-    req.headers.authorization.startsWith("Bearer")
-  ) {
+  if (req.headers.authorization?.startsWith("Bearer")) {
+    token = req.headers.authorization.split(" ")[1];
+
     try {
-      // Extract the token from the header
-      token = req.headers.authorization.split(" ")[1];
-      // console.log("Token extracted:", token); // Debuggs
+      // Check token blacklist
+      const blacklisted = await TokenBlacklist.findOne({ token });
+      if (blacklisted) {
+        return res.status(401).json({
+          status: false,
+          message: "Session expired. Please log in again.",
+        });
+      }
 
-      // Verify the token
+      // Verify token
       const decoded = jwt.verify(token, process.env.JWT_SECRET);
-      // console.log("Decoded token payload:", decoded); // Debugg
 
-      // Find the user in the database and attach it to the request object
+      // Get user from database
       const user = await User.findById(decoded.id).select("-password");
-      // console.log("User found in database:", user); // Debugging
 
       if (!user) {
         return res.status(404).json({
           status: false,
-          message: "User not found. Authentication failed.",
+          message: "User not found",
         });
       }
 
+      // Check if user has an active session (refreshToken exists)
+      if (!user.refreshToken) {
+        return res.status(401).json({
+          status: false,
+          message: "Session expired. Please log in again.",
+        });
+      }
+
+      // Attach user to request
       req.user = user;
-      //  console.log("User attached to request:", req.user); // Debugg
       next();
     } catch (error) {
-      return res.status(401).json({
+      res.status(401).json({
         status: false,
-        message: `Not authorized. Token verification failed: ${error.message}`,
+        message: `Authentication failed: ${error.message}`,
       });
     }
   } else {
-    // If no token is found
-    return res.status(401).json({
+    res.status(401).json({
       status: false,
-      message: "Not authorized. No token provided in the request headers.",
+      message: "No authentication token provided",
     });
   }
 });
+
 // Middleware to check if the user is an admin
 const isAdmin = asyncHandler(async (req, res, next) => {
   if (req.user && req.user.roles === "admin") {

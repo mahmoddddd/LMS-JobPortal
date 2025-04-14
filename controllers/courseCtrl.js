@@ -5,74 +5,17 @@ const mongoose = require("mongoose");
 const courseCat = require("../models/courseCategoryModel");
 const User = require("../models/userModel");
 const validateMongoDbId = require("../config/validateMongoDb");
+
+const uploadToCloudinary = require("../services/cloudinary");
+
 const createCourse = asyncHandler(async (req, res) => {
-  const {
-    title,
-    description,
-    category,
-    price,
-    image,
-    totalHours,
-    isPublished,
-    totleRating,
-  } = req.body;
+  const { title, description, category, isPublished } = req.body;
 
-  // Validate required fields
-  if (!title || !description || !category || price === undefined) {
-    return res.status(400).json({
-      status: false,
-      message:
-        "All fields are required: title, description, category, price, totalHours.",
-    });
-  }
+  const price = Number(req.body.price);
+  const totalHours = Number(req.body.totalHours);
+  const totleRating = req.body.totleRating ? Number(req.body.totleRating) : 0;
 
-  if (!mongoose.Types.ObjectId.isValid(category)) {
-    return res.status(400).json({
-      status: false,
-      message: "Invalid category ID.",
-    });
-  }
-
-  const courseCategory = await courseCat.findById(category);
-  if (!courseCategory) {
-    return res.status(400).json({
-      status: false,
-      message: "Invalid category ID.",
-    });
-    s;
-  }
-
-  // Validate price (must be a non-negative number)
-  if (typeof price !== "number" || price < 0) {
-    return res.status(400).json({
-      status: false,
-      message: "Price must be a non-negative number.",
-    });
-  }
-
-  // Validate totalHours (must be a positive number)
-  if (typeof totalHours !== "number" || totalHours <= 0) {
-    return res.status(400).json({
-      status: false,
-      message: "Total hours must be a positive number.",
-    });
-  }
-
-  // Validate totalRating (if provided, must be a non-negative number)
-  if (
-    totleRating !== undefined &&
-    (typeof totleRating !== "number" || totleRating < 0)
-  ) {
-    return res.status(400).json({
-      status: false,
-      message: "Total rating must be a non-negative number.",
-    });
-  }
-
-  // Generate a slug from the course title
   const slug = slugify(title.toLowerCase());
-
-  // Check if a course with the same slug (title) already exists
   const existingCourse = await Course.findOne({ slug });
   if (existingCourse) {
     return res.status(400).json({
@@ -80,22 +23,41 @@ const createCourse = asyncHandler(async (req, res) => {
       message: "Course with this title already exists.",
     });
   }
+
   const instructor = req.user.id;
-  // Create the new course
+
+  // upload image for course
+  let imageUrl = "https://cdn-icons-png.flaticon.com/512/149/149071.png";
+  if (req.files && req.files.image && req.files.image[0]) {
+    imageUrl = await uploadToCloudinary(
+      req.files.image[0].path,
+      "lms/courses/images"
+    );
+  }
+
+  // upload intro course video
+  let videoUrl = null;
+  if (req.files && req.files.video && req.files.video[0]) {
+    videoUrl = await uploadToCloudinary(
+      req.files.video[0].path,
+      "lms/courses/videos"
+    );
+  }
+
   const newCourse = await Course.create({
     title,
     slug,
     description,
     category,
-    instructor: instructor,
+    instructor,
     price,
-    image: image || "https://cdn-icons-png.flaticon.com/512/149/149071.png",
+    image: imageUrl,
+    video: videoUrl,
     isPublished: isPublished || false,
     totalHours,
     totleRating: totleRating || 0,
   });
 
-  // Return success response with the created course
   res.status(201).json({
     status: true,
     message: "Course created successfully.",

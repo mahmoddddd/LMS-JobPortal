@@ -1,7 +1,13 @@
 const { hash } = require("bcrypt");
 const User = require("../models/userModel");
+const TokenBlacklist = require("../models/tokenBlackListModel");
+
 const asyncHandler = require("express-async-handler");
-const { generateToken } = require("../config/jwtToken");
+const {
+  generateToken,
+  generateRefreshToken,
+  verifyRefreshToken,
+} = require("../config/jwtToken");
 const validateMongoDbId = require("../config/validateMongoDb");
 const { createHash } = require("crypto");
 const crypto = require("crypto");
@@ -73,26 +79,118 @@ const registerAUser = asyncHandler(async (req, res) => {
   }
 });
 
-/* login a user */
+// Login A User
 const loginUser = asyncHandler(async (req, res) => {
   const { email, password } = req.body;
   const findUser = await User.findOne({ email: email });
 
   if (findUser && (await findUser.comparePassword(password))) {
+    const accessToken = generateToken(findUser?._id);
+    const refreshToken = generateRefreshToken(findUser?._id);
+
+    // update refresh token in database
+    findUser.refreshToken = refreshToken;
+    await findUser.save();
+
+    // HTTP Only Cookie
+    res.cookie("refreshToken", refreshToken, {
+      httpOnly: true,
+      maxAge: 7 * 24 * 60 * 60 * 1000, // 7 أيام
+      secure: process.env.NODE_ENV === "production",
+      sameSite: "strict",
+    });
+
     res.status(200).json({
       status: true,
-      message: "user login sucsefuly",
+      message: "user login successfully",
       id: findUser.id,
-      token: generateToken(findUser?._id),
+      token: accessToken,
       role: findUser?.roles,
       username: findUser?.firstname + findUser?.lastname,
       user_imag: findUser?.user_imag,
     });
   } else {
-    throw new Error("invalid cradintial");
+    throw new Error("invalid credentials");
   }
 });
 
+// Refresh Access Token
+const refreshAccessToken = asyncHandler(async (req, res) => {
+  const { refreshToken } = req.cookies;
+
+  if (!refreshToken) {
+    return res
+      .status(401)
+      .json({ status: false, message: "No refresh token provided" });
+  }
+
+  try {
+    const decoded = verifyRefreshToken(refreshToken);
+
+    const user = await User.findOne({
+      _id: decoded.id,
+      refreshToken: refreshToken,
+    });
+
+    if (!user) {
+      return res
+        .status(403)
+        .json({ status: false, message: "Invalid refresh token" });
+    }
+
+    const newAccessToken = generateToken(user._id);
+
+    res.status(200).json({
+      status: true,
+      token: newAccessToken,
+    });
+  } catch (error) {
+    return res
+      .status(403)
+      .json({ status: false, message: "Invalid refresh token" });
+  }
+});
+
+// Logout User
+const logoutUser = asyncHandler(async (req, res) => {
+  const token = req.headers.authorization?.split(" ")[1];
+  const refreshToken = req.cookies?.refreshToken;
+
+  try {
+    // Add tokens to blacklist
+    if (token) {
+      await TokenBlacklist.create({
+        token,
+        expiresAt: new Date(Date.now() + 3600000), // 1 hour from now
+      });
+    }
+
+    // Remove refreshToken from user
+    if (refreshToken) {
+      await User.findOneAndUpdate(
+        { refreshToken },
+        { $unset: { refreshToken: 1 } }
+      );
+    }
+
+    // Clear cookies
+    res.clearCookie("refreshToken", {
+      httpOnly: true,
+      secure: process.env.NODE_ENV === "production",
+    });
+
+    res.status(200).json({
+      status: true,
+      message: "Successfully logged out",
+    });
+  } catch (error) {
+    res.status(500).json({
+      status: false,
+      message: "Logout failed",
+      error: error.message,
+    });
+  }
+});
 // Get All Users
 const getAllUsers = asyncHandler(async (req, res) => {
   try {
@@ -504,6 +602,8 @@ const setPasswordAndMobile = asyncHandler(async (req, res) => {
 module.exports = {
   registerAUser,
   loginUser,
+  refreshAccessToken,
+  logoutUser,
   getAllUsers,
   updateUserProfile,
   deleteUser,

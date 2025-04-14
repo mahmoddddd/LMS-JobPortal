@@ -33,6 +33,9 @@ let userSchema = new mongoose.Schema(
         return !this.googleId;
       },
     },
+    refreshToken: {
+      type: String,
+    },
     roles: {
       enum: ["user", "admin", "instructor"],
       type: String,
